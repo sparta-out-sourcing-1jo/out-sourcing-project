@@ -31,25 +31,35 @@ public class ShopController {
     }
 
 
-    // TODO: 메뉴 리스트 받아서 넣기
-// 가게 단건 조회 (상점 정보 + 메뉴 리스트)
-    @GetMapping("/{shopId}")
-    public ResponseEntity<ShopMenuResponseDto> getShop(@PathVariable Long shopId) {
+//    // TODO: 메뉴 리스트 받아서 넣기
 
-        return ResponseEntity.ok(shopService.getShop(shopId));
+    /// / 가게 단건 조회 (상점 정보 + 메뉴 리스트)
+//    @GetMapping("/{shopId}")
+//    public ResponseEntity<ShopMenuResponseDto> getShop(@PathVariable Long shopId) {
+//
+//        return ResponseEntity.ok(shopService.getShop(shopId));
+//    }
+
+    // 가게 다건 조회 (페이징)
+    @GetMapping("/{userId}")
+    public ResponseEntity<Page<PageShopResponseDto>> getShops(
+            @RequestParam(required = false) ShopCategory category,
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @PathVariable Long userId) {
+
+        // 로그인 유무에 따른 로직 분리
+        if (userId != null) {
+            // 로그인 시
+            return ResponseEntity.ok(shopService.getShopsLogin(userId, category, name, page, size));
+        } else {
+            // 비로그인 시
+            return ResponseEntity.ok(shopService.getShops(category, name, page, size));
+        }
+
     }
 
-//    // 가게 다건 조회 (페이징)
-//    @GetMapping
-//    public ResponseEntity<Page<PageShopResponseDto>> getShops(
-//            @RequestParam(required = false) ShopCategory category,
-//            @RequestParam(required = false) String name,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size) {
-//
-//        return ResponseEntity.ok(shopService.getShops(category, name, page, size));
-//    }
-//
 //// TODO: 제네릭 페이징 만들기 (보류 중)
 //// 다건 조회 (페이징)
 //// 공통 클래스
