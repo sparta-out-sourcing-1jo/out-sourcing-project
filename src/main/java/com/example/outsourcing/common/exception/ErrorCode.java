@@ -27,8 +27,11 @@ public enum ErrorCode {
     SHOP_NOT_FOUND("해당 가게를 찾을 수 없습니다", NOT_FOUND),
 
     // 주문 관련 예외 코드
-    ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다.", NOT_FOUND);
+    ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다", NOT_FOUND),
+    ORDER_NOT_FINISH("아직 해당 주문이 도착하지 않았습니다", CONFLICT),
 
+    // 리뷰 관련 예외 코드
+    REVIEW_NOT_FOUND("해당 리뷰를 찾을 수 없습니다", NOT_FOUND);
 
     private final String message;
     private final HttpStatus status;
