@@ -120,6 +120,10 @@ public class ShopService {
 
         Page<Shop> shops = shopRepository.findAll(specification, pageable);
 
+        if (shops == null) {
+            return Page.empty(pageable);
+        }
+
         return shops.map(PageShopResponseDto::new);
     }
 
@@ -140,6 +144,10 @@ public class ShopService {
                 .and(ShopSpecification.shopAddressLike(userAddress));
 
         Page<Shop> shops = shopRepository.findAll(specification, pageable);
+
+        if (shops == null) {
+            return Page.empty(pageable);
+        }
 
         return shops.map(PageShopResponseDto::new);
     }
