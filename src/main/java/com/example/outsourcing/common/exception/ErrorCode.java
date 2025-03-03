@@ -20,6 +20,9 @@ public enum ErrorCode {
     PASSWORD_SAME_AS_OLD("이전 패스워드와 동일할 수 없습니다.", BAD_REQUEST),
     USER_ACCESS_DENIED("사용자가 접근할 수 있는 권한이 없습니다.", FORBIDDEN),
 
+    // 토큰 관련 예외 코드
+    TOKEN_NOT_FOUND("해당 토큰을 찾을 수 없습니다.", NOT_FOUND),
+
     // 메뉴 관련 예외 코드
     MENU_NOT_FOUND("해당 메뉴를 찾을 수 없습니다.", NOT_FOUND),
 
