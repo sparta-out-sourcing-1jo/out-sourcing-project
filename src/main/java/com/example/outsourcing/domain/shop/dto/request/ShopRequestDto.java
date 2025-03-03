@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class AddShopRequestDto {
+public class ShopRequestDto {
     private String name;
     private String intro;
     private String address;
