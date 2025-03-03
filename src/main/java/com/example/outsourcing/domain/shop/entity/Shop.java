@@ -5,13 +5,19 @@ import com.example.outsourcing.common.enums.ShopCategory;
 import com.example.outsourcing.common.enums.ShopState;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Entity
 @Table(name = "shops")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Shop extends BaseTimeEntity {
 
     @Id
