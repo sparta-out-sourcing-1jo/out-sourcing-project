@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Entity
@@ -34,8 +34,8 @@ public class Shop extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ShopCategory category;
 
-    private LocalDateTime openAt;
-    private LocalDateTime closeAt;
+    private LocalTime openAt;
+    private LocalTime closeAt;
     private Double averageRating;
     private Integer reviewCount;
     private Double minPrice;

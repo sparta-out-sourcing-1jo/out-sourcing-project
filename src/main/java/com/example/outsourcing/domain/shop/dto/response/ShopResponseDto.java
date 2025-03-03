@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Builder
@@ -15,8 +16,8 @@ public class ShopResponseDto {
     private String intro;
     private String address;
     private String category;
-    private LocalDateTime openAt;
-    private LocalDateTime closeAt;
+    private LocalTime openAt;
+    private LocalTime closeAt;
     private Double averageRating;
     private Integer reviewCount;
     private Double minPrice;
