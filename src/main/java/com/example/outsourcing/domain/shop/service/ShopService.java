@@ -1,6 +1,9 @@
 package com.example.outsourcing.domain.shop.service;
 
+import com.example.outsourcing.domain.menu.entity.Menu;
+import com.example.outsourcing.domain.menu.repository.MenuRepository;
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
+import com.example.outsourcing.domain.shop.dto.response.ShopMenuResponseDto;
 import com.example.outsourcing.domain.shop.dto.response.ShopResponseDto;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.shop.repository.ShopRepository;
@@ -10,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.example.outsourcing.common.enums.UserRole.OWNER;
 
 @Service
@@ -18,6 +24,7 @@ public class ShopService {
 
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
+    private final MenuRepository menuRepository;
 
     // 가게 생성
     @Transactional
@@ -75,4 +82,26 @@ public class ShopService {
                 .updateAt(shop.getUpdatedAt())
                 .build();
     }
+
+    // 가게 단건 조회
+    public ShopMenuResponseDto getShop(Long shopId) {
+
+        // 가게 검증
+        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("가게를 찾을 수 없습니다."));
+
+        // 메뉴 리스트 생성
+        List<Menu> menus = menuRepository.findAllByShop_Id(shopId);
+
+        // 가게와 메뉴를 DTO 로 변환
+        ShopResponseDto shopResponseDto = returnShopResponseDto(shop);
+        List<MenuResponseDto> menusDto = menus.stream().map(this::MenuResponsDto).collect(Collectors.toList());
+
+        return ShopMenuResponseDto.builder()
+                .shopInfo(shopResponseDto)
+                .menus(menusDto)
+                .build();
+    }
+
+
+
 }
