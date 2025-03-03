@@ -13,5 +13,5 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     Optional<Shop> findShopById(@Param("shopId") Long shopId);
 
     // 한 유저 당 폐업안한 가게 개수 카운트
-    long countByUserIdAndDeletedAtIsNull(Long userId);
+    int countByUserIdAndDeletedAtIsNull(Long userId);
 }

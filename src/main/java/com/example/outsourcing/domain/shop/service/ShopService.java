@@ -8,6 +8,7 @@ import com.example.outsourcing.domain.user.entity.User;
 import com.example.outsourcing.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.example.outsourcing.common.enums.UserRole.OWNER;
 
@@ -19,6 +20,7 @@ public class ShopService {
     private final UserRepository userRepository;
 
     // 가게 생성
+    @Transactional
     public ShopResponseDto addShop(ShopRequestDto requestDto, Long userId) {
 
         // 유저 검증
