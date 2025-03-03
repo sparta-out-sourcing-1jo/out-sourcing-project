@@ -23,10 +23,11 @@ public class ShopController {
 
     // TODO: jwt 인증 추가
     // 가게 생성
-    @PostMapping
-    public ResponseEntity<ShopResponseDto> addShop(@RequestBody ShopRequestDto requestDto) {
+    @PostMapping("/posts/{postId}/{userId}")
+    public ResponseEntity<ShopResponseDto> addShop(@RequestBody ShopRequestDto requestDto,
+                                                   @PathVariable Long userId) {
 
-        return ResponseEntity.ok(shopService.addShop(requestDto));
+        return ResponseEntity.ok(shopService.addShop(requestDto, userId));
     }
 
     // TODO: 메뉴 리스트 받아서 넣기
@@ -48,7 +49,7 @@ public class ShopController {
         return ResponseEntity.ok(shopService.getShops(category, name, page, size));
     }
 
-    // TODO: 제네릭 페이징 만들기
+    // TODO: 제네릭 페이징 만들기 (보류 중)
     // 다건 조회 (페이징)
     // 공통 클래스
 //    @GetMapping
@@ -63,26 +64,29 @@ public class ShopController {
 
     // TODO: jwt 인증 추가
     // 가게 단건 수정
-    @PatchMapping("/{shopId}")
+    @PatchMapping("/{shopId}/{userId}")
     public ResponseEntity<ShopResponseDto> updateShop(@PathVariable Long shopId,
-                                                      @RequestBody ShopRequestDto requestDto) {
+                                                      @RequestBody ShopRequestDto requestDto,
+                                                      @PathVariable Long userId) {
 
-        return ResponseEntity.ok(shopService.updateShop(requestDto));
+        return ResponseEntity.ok(shopService.updateShop(requestDto, userId));
     }
 
     // TODO: 기본 변경은 스케줄, jwt 인증 추가
     // 가게 영업상태 강제 변경
-    @PatchMapping("/{shopId}/state")
+    @PatchMapping("/{shopId}/state/{userId}")
     public ResponseEntity<StateShopResponseDto> updateStateShop(@PathVariable Long shopId,
-                                                                @RequestBody StateShopRequestDto requestDto) {
-        return ResponseEntity.ok(shopService.updateStateShop(requestDto));
+                                                                @RequestBody StateShopRequestDto requestDto,
+                                                                @PathVariable Long userId) {
+        return ResponseEntity.ok(shopService.updateStateShop(requestDto, userId));
     }
 
     // TODO: jwt 인증 추가
     // 가게 폐업
-    @DeleteMapping("/{shopId}")
-    public ResponseEntity<Void> deleteShop(@PathVariable Long shopId) {
-        shopService.deleteShop(shopId);
+    @DeleteMapping("/{shopId}/{userId}")
+    public ResponseEntity<Void> deleteShop(@PathVariable Long shopId,
+                                           @PathVariable Long userId) {
+        shopService.deleteShop(shopId, userId);
     }
 
 
