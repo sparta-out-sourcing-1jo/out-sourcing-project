@@ -1,6 +1,7 @@
 package com.example.outsourcing.domain.shop.service;
 
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
+import com.example.outsourcing.domain.shop.dto.response.PageShopResponseDto;
 import com.example.outsourcing.domain.shop.dto.response.ShopResponseDto;
 import com.example.outsourcing.domain.shop.repository.ShopRepository;
 import com.example.outsourcing.domain.user.entity.User;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalTime;
@@ -146,5 +148,35 @@ public class ShopServiceTest {
         // then
         assertEquals("사장님만 가게 생성 가능합니다.", exception.getMessage());
     }
+    
+    // getShop 테스트
+    
+    
+    // getShops 테스트
+    @Test
+    void shop_다건_조회_시_null을_반환_하지_않는다(){
+        // given
+
+        // when
+        Page<PageShopResponseDto> page = shopService.getShops(CHICKEN, "손님", 0, 10);
+
+        // then
+        assertThat(page).isNotNull();
+    }
+    
+    //getShopsLogin 테스트
+    @Test
+    void 로그인하고_shop_다건_조회_시_user가_null인_경우_RuntimeException이_발생한다(){
+        // given
+
+        // when
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> shopService.getShopsLogin(1L, CHICKEN, "손님", 0, 10));
+
+        // then
+        assertEquals("유저를 찾을 수 없습니다.", exception.getMessage());
+    }
+
 
 }
+
