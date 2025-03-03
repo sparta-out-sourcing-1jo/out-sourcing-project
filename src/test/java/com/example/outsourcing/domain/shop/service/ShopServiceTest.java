@@ -37,6 +37,7 @@ public class ShopServiceTest {
     @InjectMocks
     private ShopService shopService;
 
+    // addShop 테스트
     @Test
     void shop_생성_성공_시_Null_을_반환하지_않고_필드값이_일치한다() {
         // given
@@ -83,7 +84,7 @@ public class ShopServiceTest {
 
 
     @Test
-    void shop_생성_시_user가_null인_경우_RuntimeException_발생한다(){
+    void shop_생성_시_user가_null인_경우_RuntimeException이_발생한다(){
         // given
         // 유저 생성
         User user = new User();
@@ -102,7 +103,7 @@ public class ShopServiceTest {
 
 
     @Test
-    void shop_생성_시_활성화된_shop이_3개_이상인_경우_RuntimeException_발생한다(){
+    void shop_생성_시_활성화된_shop이_3개_이상인_경우_RuntimeException이_발생한다(){
         // given
         // 유저 생성
         User user = new User();
@@ -126,7 +127,7 @@ public class ShopServiceTest {
     }
 
     @Test
-    void shop_생성_시_userRole이_OWNER가_아닌_경우_RuntimeException_발생한다() {
+    void shop_생성_시_user의_role이_OWNER가_아닌_경우_RuntimeException이_발생한다() {
         // given
         // 유저 생성
         User user = new User();
