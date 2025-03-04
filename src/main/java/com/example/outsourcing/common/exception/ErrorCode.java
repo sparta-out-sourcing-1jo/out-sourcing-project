@@ -34,8 +34,8 @@ public enum ErrorCode {
     INVALID_PRICE("최소 주문 가격을 넘겨주세요.", BAD_REQUEST),
     OVER_TIME_TO_OPEN("가게오픈시간이 아닙니다.", BAD_REQUEST),
     ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다.", NOT_FOUND);
-
-
+    REVIEW_NOT_FOUND("해당 리뷰를 찾을 수 없습니다", NOT_FOUND),
+    REVIEW_ALREADY_EXIST("해당 주문에 대한 리뷰가 이미 존재합니다", BAD_REQUEST);
     private final String message;
     private final HttpStatus status;
 

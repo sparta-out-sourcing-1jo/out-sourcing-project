@@ -7,7 +7,7 @@ import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Entity
@@ -28,8 +28,8 @@ public class Shop extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ShopCategory category;
 
-    private LocalDateTime openAt;
-    private LocalDateTime closeAt;
+    private LocalTime openAt;
+    private LocalTime closeAt;
     private Double averageRating;
     private Integer reviewCount;
     private Double minPrice;

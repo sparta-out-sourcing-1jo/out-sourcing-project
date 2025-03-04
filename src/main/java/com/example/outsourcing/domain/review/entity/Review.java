@@ -15,6 +15,7 @@ public class Review extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String content;
     private Integer rating;
 
@@ -26,7 +27,22 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
+
+    public Review(String content, Integer rating, User user, Shop shop, Order order) {
+        this.content = content;
+        this.rating = rating;
+        this.user = user;
+        this.shop = shop;
+        this.order = order;
+    }
+
+    public void reviewUpdate(String content, Integer rating) {
+        this.content = content;
+        this.rating = rating;
+    }
+
+    public Review() { }
 }
