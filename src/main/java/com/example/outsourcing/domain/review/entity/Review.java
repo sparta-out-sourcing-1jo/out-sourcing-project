@@ -6,7 +6,6 @@ import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Builder;
 
 @Getter
 @Entity
@@ -32,7 +31,6 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @Builder
     public Review(String content, Integer rating, User user, Shop shop, Order order) {
         this.content = content;
         this.rating = rating;
