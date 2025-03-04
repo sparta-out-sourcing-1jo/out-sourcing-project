@@ -41,6 +41,13 @@ public class ReviewService {
             CreateReviewRequestDto dto,
             Long orderId
     ) {
+        if(reviewRepository.findByOrderId(orderId).isPresent()) {
+            throw new ResponseStatusException(
+                    REVIEW_ALREADY_EXIST.getStatus(),
+                    REVIEW_ALREADY_EXIST.getMessage()
+            );
+        }
+
         Order findOrder = getOrder(orderId);
 
         if(findOrder.getState() != FINISH) {

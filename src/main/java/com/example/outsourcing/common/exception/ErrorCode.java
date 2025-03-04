@@ -31,7 +31,8 @@ public enum ErrorCode {
     ORDER_NOT_FINISH("아직 해당 주문이 도착하지 않았습니다", CONFLICT),
 
     // 리뷰 관련 예외 코드
-    REVIEW_NOT_FOUND("해당 리뷰를 찾을 수 없습니다", NOT_FOUND);
+    REVIEW_NOT_FOUND("해당 리뷰를 찾을 수 없습니다", NOT_FOUND),
+    REVIEW_ALREADY_EXIST("해당 주문에 대한 리뷰가 이미 존재합니다", BAD_REQUEST);
 
     private final String message;
     private final HttpStatus status;

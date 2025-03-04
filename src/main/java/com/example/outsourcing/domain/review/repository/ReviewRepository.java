@@ -13,6 +13,8 @@ import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
+    Optional<Review> findByOrderId(Long orderId);
+
     @Query("select r from Review r where r.shop = :shop and r.deletedAt is null")
     Page<Review> findAllReviewsByShop(@Param("shop") Shop shop, Pageable pageable);
 
