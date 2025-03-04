@@ -91,10 +91,15 @@ public class ShopService {
 
     // 평균 별점 구하기 메서드
     public Double getAverageRating(Long shopId) {
-        int totalReview = reviewRepository.countByShop_Id(shopId);
+        int reviewCount = reviewRepository.countByShop_Id(shopId);
         int totalRating = reviewRepository.findSumRatingByShopId(shopId);
 
-        return (Double) (double) (totalRating / totalReview);
+        // 0 으로 나누면 ArithmeticException 발생
+        if (reviewCount == 0) {
+            return 0.0;
+        }
+
+        return (double) (totalRating / reviewCount);
     }
 
 //    // 가게 단건 조회
