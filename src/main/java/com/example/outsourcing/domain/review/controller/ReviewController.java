@@ -1,5 +1,6 @@
 package com.example.outsourcing.domain.review.controller;
 
+import com.example.outsourcing.common.dto.response.PageResponseDto;
 import com.example.outsourcing.common.util.JwtUtil;
 import com.example.outsourcing.domain.review.dto.request.CreateReviewRequestDto;
 import com.example.outsourcing.domain.review.dto.request.UpdateReviewRequestDto;
@@ -10,6 +11,8 @@ import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,12 +43,21 @@ public class ReviewController {
 
     // 리뷰 전체 조회
     @GetMapping("/reviews")
-    public ResponseEntity<Page<GetReviewResponseDto>> findReviews(
+    public ResponseEntity<PageResponseDto<GetReviewResponseDto>> findReviews(
             @RequestParam Long shopId,
-            @SortDefault(sort = "updatedAt", direction = DESC) Pageable pageable
+            @PageableDefault(page = 1, size = 10, sort = "updatedAt", direction = DESC) Pageable pageable
     ) {
+        Pageable convertPageable = PageRequest.of(
+                pageable.getPageNumber()-1,
+                pageable.getPageSize(),
+                pageable.getSort()
+        );
+
+        PageResponseDto<GetReviewResponseDto> getReviews =
+                reviewService.findReviews(shopId, convertPageable);
+
         return new ResponseEntity<>(
-                reviewService.findReviews(shopId, pageable),
+                getReviews,
                 HttpStatus.OK
         );
     }

@@ -1,5 +1,6 @@
 package com.example.outsourcing.domain.review.service;
 
+import com.example.outsourcing.common.dto.response.PageResponseDto;
 import com.example.outsourcing.domain.order.entity.Order;
 import com.example.outsourcing.domain.order.repository.OrderRepository;
 import com.example.outsourcing.domain.review.dto.request.CreateReviewRequestDto;
@@ -65,10 +66,10 @@ public class ReviewService {
 
     // 리뷰 전체 조회 서비스 로직
     @Transactional(readOnly = true)
-    public Page<GetReviewResponseDto> findReviews(Long shopId, Pageable pageable) {
+    public PageResponseDto<GetReviewResponseDto> findReviews(Long shopId, Pageable pageable) {
         Shop findShop = getShop(shopId);
         Page<Review> reviews = reviewRepository.findAllReviewsByShop(findShop, pageable);
-        return reviews.map(GetReviewResponseDto::of);
+        return new PageResponseDto<>(reviews.map(GetReviewResponseDto::of));
     }
 
     // 리뷰 단건 수정 서비스 로직
