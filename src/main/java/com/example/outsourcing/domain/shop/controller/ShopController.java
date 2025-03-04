@@ -31,14 +31,14 @@ public class ShopController {
     }
 
 
-//    // TODO: 메뉴 리스트 받아서 넣기
+    // TODO: 메뉴 리스트 받아서 넣기
 
-    /// / 가게 단건 조회 (상점 정보 + 메뉴 리스트)
-//    @GetMapping("/{shopId}")
-//    public ResponseEntity<ShopMenuResponseDto> getShop(@PathVariable Long shopId) {
-//
-//        return ResponseEntity.ok(shopService.getShop(shopId));
-//    }
+    // 가게 단건 조회 (상점 정보 + 메뉴 리스트)
+    @GetMapping("/{shopId}")
+    public ResponseEntity<ShopMenuResponseDto> getShop(@PathVariable Long shopId) {
+
+        return ResponseEntity.ok(shopService.getShop(shopId));
+    }
 
     // 가게 다건 조회 (페이징)
     @GetMapping("/{userId}")
@@ -60,18 +60,18 @@ public class ShopController {
 
     }
 
-//// TODO: 제네릭 페이징 만들기 (보류 중)
-//// 다건 조회 (페이징)
-//// 공통 클래스
-////    @GetMapping
-////    public <T> ResponseEntity<Page<T>> getAllController(
-////            @RequestParam(defaultValue = "0") int page,
-////            @RequestParam(defaultValue = "10") int size) {
-////        return ResponseEntity.ok(getAllService(page, size));
-////    }
-////
-////    public <T> Page<T> getAllService(int page, int size){
-////    }
+// TODO: 제네릭 페이징 만들기 (보류 중)
+// 다건 조회 (페이징)
+// 공통 클래스
+//    @GetMapping
+//    public <T> ResponseEntity<Page<T>> getAllController(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size) {
+//        return ResponseEntity.ok(getAllService(page, size));
+//    }
+//
+//    public <T> Page<T> getAllService(int page, int size){
+//    }
 
     // TODO: jwt 인증 추가
 // 가게 단건 수정
