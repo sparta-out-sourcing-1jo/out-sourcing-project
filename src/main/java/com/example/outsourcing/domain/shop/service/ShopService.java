@@ -1,8 +1,8 @@
 package com.example.outsourcing.domain.shop.service;
 
-import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.common.enums.ShopCategory;
 import com.example.outsourcing.domain.menu.repository.MenuRepository;
+import com.example.outsourcing.domain.review.repository.ReviewRepository;
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
 import com.example.outsourcing.domain.shop.dto.request.StateShopRequestDto;
 import com.example.outsourcing.domain.shop.dto.response.PageShopResponseDto;
@@ -17,10 +17,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 import static com.example.outsourcing.common.enums.UserRole.OWNER;
 
@@ -31,6 +30,7 @@ public class ShopService {
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
     private final MenuRepository menuRepository;
+    private final ReviewRepository reviewRepository;
 
     // 가게 생성
     @Transactional
@@ -79,14 +79,22 @@ public class ShopService {
                 .category(String.valueOf(shop.getCategory())) // 이넘 값을 그대로 내보낼 수 없으니 String.valueOf 를 이용하여 이넘값의 이름을 문자열로 반환해서 추출
                 .openAt(shop.getOpenAt())
                 .closeAt(shop.getCloseAt())
-                .averageRating(shop.getAverageRating())
-                .reviewCount(shop.getReviewCount())
+                .averageRating(getAverageRating(shop.getId()))
+                .reviewCount(reviewRepository.countByShop_Id(shop.getId()))
                 .minPrice(shop.getMinPrice())
                 .state(shop.getState())
                 .owner(shop.getUser().getUsername())
                 .createAt(shop.getCreatedAt())
                 .updateAt(shop.getUpdatedAt())
                 .build();
+    }
+
+    // 평균 별점 구하기 메서드
+    public Double getAverageRating(Long shopId) {
+        int totalReview = reviewRepository.countByShop_Id(shopId);
+        int totalRating = reviewRepository.findSumRatingByShopId(shopId);
+
+        return (Double) (double) (totalRating / totalReview);
     }
 
 //    // 가게 단건 조회
