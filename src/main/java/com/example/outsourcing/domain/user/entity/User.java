@@ -5,6 +5,8 @@ import com.example.outsourcing.common.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @Table(name = "users")
@@ -29,6 +31,8 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    private LocalDateTime deletedAt;
+
     public User(String email, String password, String username, String address, UserRole role) {
         this.email = email;
         this.password = password;
@@ -39,5 +43,17 @@ public class User extends BaseTimeEntity {
 
     public void changePassword(String password){
         this.password = password;
+    }
+
+    public void changeUserRole(UserRole role){
+        this.role = role;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt){
+        this.deletedAt = deletedAt;
+    }
+
+    public boolean isDeleted(){
+        return deletedAt != null;
     }
 }
