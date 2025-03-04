@@ -5,13 +5,10 @@ import com.example.outsourcing.domain.order.entity.Order;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "reviews")
 public class Review extends BaseTimeEntity {
@@ -34,7 +31,6 @@ public class Review extends BaseTimeEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
     @Builder
     public Review(String content, Integer rating, User user, Shop shop, Order order) {
         this.content = content;
@@ -48,4 +44,6 @@ public class Review extends BaseTimeEntity {
         this.content = content;
         this.rating = rating;
     }
+
+    public Review() { }
 }
