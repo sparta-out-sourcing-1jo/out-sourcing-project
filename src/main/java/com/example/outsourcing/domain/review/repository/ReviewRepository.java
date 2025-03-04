@@ -24,4 +24,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Modifying
     @Query("update Review r set r.deletedAt = current_timestamp where r.id = :reviewId")
     void deleteReviewById(@Param("reviewId") Long reviewId);
+
+    @Query(value = "select coalesce(sum(r.rating), 0) from Review r where r.shop.id = :shopId", nativeQuery = true)
+    Integer findSumRatingByShopId(@Param("shopId") Long shopId);
 }
