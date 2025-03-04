@@ -109,7 +109,8 @@ public class ShopService {
 //    }
 
 
-    // 가게 다건 조회 (비회원)
+    // 가게 다건 조회 (비로그인)
+    @Transactional(readOnly = true)
     public Page<PageShopResponseDto> getShops(ShopCategory category, String name, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
@@ -127,7 +128,8 @@ public class ShopService {
         return shops.map(PageShopResponseDto::new);
     }
 
-    // 가게 다건 조회 (회원)
+    // 가게 다건 조회 (로그인)
+    @Transactional(readOnly = true)
     public Page<PageShopResponseDto> getShopsLogin(Long userId, ShopCategory category, String name, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
@@ -137,11 +139,14 @@ public class ShopService {
         // 유저 주소 추출
         String userAddress = user.getAddress();
 
+        // 추출된 주소 중 앞의 2글자만 추출
+        String Address2Chars = userAddress.substring(0, 2);
+
         // 동적 쿼리 적용
         Specification<Shop> specification = Specification.where(ShopSpecification.shopDeletedAtIsNull())
                 .and(ShopSpecification.shopCategoryEqual(category.toString()))
                 .and(ShopSpecification.shopNameLike(name))
-                .and(ShopSpecification.shopAddressLike(userAddress));
+                .and(ShopSpecification.shopAddressLike(Address2Chars));
 
         Page<Shop> shops = shopRepository.findAll(specification, pageable);
 
