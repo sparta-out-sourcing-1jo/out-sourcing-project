@@ -14,11 +14,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import static com.example.outsourcing.common.exception.ErrorCode.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -65,4 +67,19 @@ class AuthServiceTest {
         verify(jwtUtil).createToken(anyLong(), anyString(), any(UserRole.class));
     }
 
+    @Test
+    @DisplayName("회원가입 실패 - 이메일 중복")
+    void signup_Fail_EmailDuplication(){
+        //given
+        SignupRequest request = new SignupRequest("test@example.com", "testPassword", "testname", "testAddress", "USER");
+
+        when(userRepository.existsByEmail(request.getEmail())).thenReturn(true);
+
+        //when & then
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, ()->authService.signup(request));
+        assertEquals(USER_EMAIL_DUPLICATION.getStatus(), exception.getStatusCode());
+
+        verify(userRepository).existsByEmail(request.getEmail());
+        verifyNoMoreInteractions(userRepository, passwordEncoder, jwtUtil);
+    }
 }
