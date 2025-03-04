@@ -72,33 +72,36 @@ public class ShopController {
 ////
 ////    public <T> Page<T> getAllService(int page, int size){
 ////    }
-//
-//    // TODO: jwt 인증 추가
-//// 가게 단건 수정
-//    @PatchMapping("/{shopId}/{userId}")
-//    public ResponseEntity<ShopResponseDto> updateShop(@PathVariable Long shopId,
-//                                                      @RequestBody ShopRequestDto requestDto,
-//                                                      @PathVariable Long userId) {
-//
-//        return ResponseEntity.ok(shopService.updateShop(requestDto, userId));
-//    }
-//
-//    // TODO: 기본 변경은 스케줄, jwt 인증 추가
-//// 가게 영업상태 강제 변경
-//    @PatchMapping("/{shopId}/state/{userId}")
-//    public ResponseEntity<StateShopResponseDto> updateStateShop(@PathVariable Long shopId,
-//                                                                @RequestBody StateShopRequestDto requestDto,
-//                                                                @PathVariable Long userId) {
-//        return ResponseEntity.ok(shopService.updateStateShop(requestDto, userId));
-//    }
-//
-//    // TODO: jwt 인증 추가
-//// 가게 폐업
-//    @DeleteMapping("/{shopId}/{userId}")
-//    public ResponseEntity<Void> deleteShop(@PathVariable Long shopId,
-//                                           @PathVariable Long userId) {
-//        shopService.deleteShop(shopId, userId);
-//    }
+
+    // TODO: jwt 인증 추가
+// 가게 단건 수정
+    @PatchMapping("/{shopId}/{userId}")
+    public ResponseEntity<ShopResponseDto> updateShop(@PathVariable Long shopId,
+                                                      @RequestBody ShopRequestDto requestDto,
+                                                      @PathVariable Long userId) {
+
+        return ResponseEntity.ok(shopService.updateShop(shopId, requestDto, userId));
+    }
+
+    // TODO: 기본 변경은 스케줄, jwt 인증 추가
+// 가게 영업상태 강제 변경
+    @PatchMapping("/{shopId}/state/{userId}")
+    public ResponseEntity<StateShopResponseDto> updateStateShop(@PathVariable Long shopId,
+                                                                @RequestBody StateShopRequestDto requestDto,
+                                                                @PathVariable Long userId) {
+        return ResponseEntity.ok(shopService.updateStateShop(shopId, requestDto, userId));
+    }
+
+    // TODO: jwt 인증 추가
+// 가게 폐업
+    @DeleteMapping("/{shopId}/{userId}")
+    public ResponseEntity<Void> deleteShop(@PathVariable Long shopId,
+                                           @PathVariable Long userId) {
+        shopService.deleteShop(shopId, userId);
+
+        // 레스트풀 상, ResponseEntity.noContent().build() 으로 204 No Content 반환하는 것이 일반적이지만, 팀 컨벤션상 200 ok 반환.
+        return ResponseEntity.ok().build();
+    }
 
 
 }

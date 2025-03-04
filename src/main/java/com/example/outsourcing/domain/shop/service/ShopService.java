@@ -1,12 +1,13 @@
 package com.example.outsourcing.domain.shop.service;
 
+import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.common.enums.ShopCategory;
-import com.example.outsourcing.domain.menu.entity.Menu;
 import com.example.outsourcing.domain.menu.repository.MenuRepository;
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
+import com.example.outsourcing.domain.shop.dto.request.StateShopRequestDto;
 import com.example.outsourcing.domain.shop.dto.response.PageShopResponseDto;
-import com.example.outsourcing.domain.shop.dto.response.ShopMenuResponseDto;
 import com.example.outsourcing.domain.shop.dto.response.ShopResponseDto;
+import com.example.outsourcing.domain.shop.dto.response.StateShopResponseDto;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.shop.repository.ShopRepository;
 import com.example.outsourcing.domain.user.entity.User;
@@ -19,8 +20,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 import static com.example.outsourcing.common.enums.UserRole.OWNER;
 
@@ -156,4 +156,73 @@ public class ShopService {
 
         return shops.map(PageShopResponseDto::new);
     }
+
+    // 가게 정보 수정
+    public ShopResponseDto updateShop(Long shopId, ShopRequestDto requestDto, Long userId) {
+
+        // 유저 검증
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
+        // 사장 검증
+        if (!user.getRole().equals(OWNER)) {
+            throw new RuntimeException("사장님만 가게 정보 수정이 가능합니다.");
+        }
+
+        // 가게 검증
+        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("가게를 찾을 수 없습니다."));
+
+        // shop 엔티티 데이터 업데이트
+        shop.update(requestDto);
+
+        // 업데이트된 엔티티를 DB에 저장하고 동시에 반환
+        return returnShopResponseDto(shopRepository.save(shop));
+    }
+
+    public StateShopResponseDto updateStateShop(Long shopId, StateShopRequestDto requestDto, Long userId) {
+
+        // 유저 검증
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
+        // 사장 검증
+        if (!user.getRole().equals(OWNER)) {
+            throw new RuntimeException("사장님만 가게 정보 수정이 가능합니다.");
+        }
+
+        // 가게 검증
+        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("가게를 찾을 수 없습니다."));
+
+        // 가게 상태 업데이트
+        shop.updateState(requestDto.getState());
+
+        // 업데이트된 엔티티를 DB에 저장
+        Shop upadteShop = shopRepository.save(shop);
+
+        // DB에 저장된 엔티티를 DTO로 반환
+        return new StateShopResponseDto(upadteShop.getState(), upadteShop.getUpdatedAt());
+    }
+
+
+    // 가게 폐업
+    public void deleteShop(Long shopId, Long userId) {
+        // 유저 검증
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
+        // 사장 검증
+        if (!user.getRole().equals(OWNER)) {
+            throw new RuntimeException("사장님만 가게 정보 수정이 가능합니다.");
+        }
+
+        // 가게 검증
+        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("가게를 찾을 수 없습니다."));
+
+        // 가게 삭제 (소프트 딜리트)
+        shop.setDeletedAt();
+
+        // 삭제된 정보 DB에 저장
+        shopRepository.save(shop);
+
+        // 반환값 없으므로 패스
+    }
+
+
 }
