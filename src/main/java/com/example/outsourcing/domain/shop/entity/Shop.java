@@ -6,10 +6,8 @@ import com.example.outsourcing.common.enums.ShopState;
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalTime;
 
 @Getter
@@ -17,7 +15,7 @@ import java.time.LocalTime;
 @Table(name = "shops")
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Shop extends BaseTimeEntity {
 
     @Id

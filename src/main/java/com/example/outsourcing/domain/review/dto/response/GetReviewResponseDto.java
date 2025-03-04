@@ -24,7 +24,7 @@ public class GetReviewResponseDto {
     public static GetReviewResponseDto of(Review review) {
         return new GetReviewResponseDto(
                 review.getId(),
-                review.getOrder().getUserId(),
+                review.getUser().getId(),
                 review.getShop().getId(),
                 review.getOrder().getId(),
                 review.getContent(),

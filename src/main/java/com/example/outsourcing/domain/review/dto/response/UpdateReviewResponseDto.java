@@ -1,13 +1,14 @@
 package com.example.outsourcing.domain.review.dto.response;
 
 import com.example.outsourcing.domain.review.entity.Review;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class UpdateReviewResponseDto {
 
     private final Long id;
@@ -23,7 +24,7 @@ public class UpdateReviewResponseDto {
     public static GetReviewResponseDto of(Review review) {
         return new GetReviewResponseDto(
                 review.getId(),
-                review.getOrder().getUserId(),
+                review.getUser().getId(),
                 review.getShop().getId(),
                 review.getOrder().getId(),
                 review.getContent(),

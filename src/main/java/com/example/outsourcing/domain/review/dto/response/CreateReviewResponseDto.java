@@ -23,7 +23,7 @@ public class CreateReviewResponseDto {
     public static CreateReviewResponseDto of(Review review) {
         return new CreateReviewResponseDto(
                 review.getId(),
-                review.getOrder().getUserId(),
+                review.getUser().getId(),
                 review.getShop().getId(),
                 review.getOrder().getId(),
                 review.getContent(),

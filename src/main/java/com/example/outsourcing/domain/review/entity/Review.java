@@ -5,8 +5,11 @@ import com.example.outsourcing.domain.order.entity.Order;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@Builder
 @Getter
 @Entity
 @Table(name = "reviews")
@@ -31,18 +34,8 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    public Review(String content, Integer rating, User user, Shop shop, Order order) {
-        this.content = content;
-        this.rating = rating;
-        this.user = user;
-        this.shop = shop;
-        this.order = order;
-    }
-
     public void reviewUpdate(String content, Integer rating) {
         this.content = content;
         this.rating = rating;
     }
-
-    public Review() { }
 }

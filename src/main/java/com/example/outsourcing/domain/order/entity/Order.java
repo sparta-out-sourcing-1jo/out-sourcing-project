@@ -4,7 +4,6 @@ import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.common.enums.CancelReason;
 import com.example.outsourcing.common.enums.OrderState;
 import com.example.outsourcing.domain.menu.entity.Menu;
-import com.example.outsourcing.domain.order.dto.response.OrderResponseDto;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -33,25 +32,19 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private String userName;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
-    private String shopName;
-
     private String menuName;
 
-    private Double totalPrice;
+    private Integer totalPrice;
 
 
     public Order(OrderState state, User user, Shop shop, Menu menu) {
         this.state = state;
         this.user = user;
-        this.userName = user.getUsername();
         this.shop = shop;
-        this.shopName = shop.getName();
         this.menuName = menu.getName();
         this.totalPrice = menu.getPrice();
     }

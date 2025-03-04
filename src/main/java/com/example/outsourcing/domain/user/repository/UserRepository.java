@@ -31,7 +31,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     default void deleteUserById(Long userId){
         User user = findUserByIdOrElseThrow(userId);
-        user.setDeletedAt(LocalDateTime.now());
+        user.setDeletedAt();
         save(user);
     }
 }

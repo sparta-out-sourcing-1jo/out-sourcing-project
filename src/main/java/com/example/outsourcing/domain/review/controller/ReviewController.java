@@ -2,6 +2,8 @@ package com.example.outsourcing.domain.review.controller;
 
 import com.example.outsourcing.common.dto.response.PageResponseDto;
 import com.example.outsourcing.common.util.JwtUtil;
+import com.example.outsourcing.domain.auth.annotation.Auth;
+import com.example.outsourcing.domain.auth.dto.AuthUser;
 import com.example.outsourcing.domain.review.dto.request.CreateReviewRequestDto;
 import com.example.outsourcing.domain.review.dto.request.UpdateReviewRequestDto;
 import com.example.outsourcing.domain.review.dto.response.CreateReviewResponseDto;
@@ -67,13 +69,10 @@ public class ReviewController {
     public ResponseEntity<GetReviewResponseDto> updateReview(
             @Valid @RequestBody UpdateReviewRequestDto dto,
             @RequestParam Long reviewId,
-            @RequestHeader("Authorization") String bearerToken
-    ) {
-        Claims claims = jwtUtil.extractClaims(bearerToken.substring(7));
-        Long userId = Long.parseLong(claims.getSubject());
-
+            @Auth AuthUser authUser
+            ) {
         return new ResponseEntity<>(
-                reviewService.updateReview(dto, reviewId, userId),
+                reviewService.updateReview(dto, reviewId, authUser.getId()),
                 HttpStatus.OK
         );
     }
@@ -82,11 +81,9 @@ public class ReviewController {
     @DeleteMapping("/reviews")
     public ResponseEntity<Void> deleteReview(
             @RequestParam Long reviewId,
-            @RequestHeader("Authorization") String bearerToken
+            @Auth AuthUser authUser
     ) {
-        Claims claims = jwtUtil.extractClaims(bearerToken.substring(7));
-        Long userId = Long.parseLong(claims.getSubject());
-        reviewService.deleteReview(reviewId, userId);
+        reviewService.deleteReview(reviewId, authUser.getId());
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

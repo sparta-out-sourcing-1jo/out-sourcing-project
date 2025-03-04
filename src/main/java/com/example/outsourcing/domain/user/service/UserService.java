@@ -22,15 +22,25 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponse getUser(long userId){
-        User user = userRepository.findById(userId).orElseThrow(()
-        -> new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(
+                () -> new ResponseStatusException(
+                        USER_NOT_FOUND.getStatus(),
+                        USER_NOT_FOUND.getMessage()
+                )
+        );
         return new UserResponse(user.getId(), user.getEmail());
     }
 
     @Transactional
     public void changePassword(long userId, UserChangePasswordRequest changePasswordRequest) {
         User user = userRepository.findUserById(userId)
-                .orElseThrow(()->new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
+                .orElseThrow(
+                        () -> new ResponseStatusException(
+                                USER_NOT_FOUND.getStatus(),
+                                USER_NOT_FOUND.getMessage()
+                        )
+                );
 
         if(passwordEncoder.matches(changePasswordRequest.getNewPassword(), user.getPassword())) {
             throw new ResponseStatusException(PASSWORD_SAME_AS_OLD.getStatus(), PASSWORD_SAME_AS_OLD.getMessage());

@@ -6,5 +6,5 @@ public enum OrderState {
     OWNER_CANCEL,
     CLIENT_ACCEPT,
     OWNER_ACCEPT,
-    FINISH,
+    FINISH
 }

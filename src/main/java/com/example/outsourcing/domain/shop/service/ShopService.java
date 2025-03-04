@@ -22,11 +22,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.example.outsourcing.common.enums.UserRole.OWNER;
+import static com.example.outsourcing.common.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,16 +44,22 @@ public class ShopService {
     public ShopResponseDto addShop(ShopRequestDto requestDto, Long userId) {
 
         // 유저 검증
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = findUser(userId);
 
         // 사장 검증
         if (!user.getRole().equals(OWNER)) {
-            throw new RuntimeException("사장님만 가게 생성 가능합니다.");
+            throw new ResponseStatusException(
+                    OWNER_CAN_CREATE.getStatus(),
+                    OWNER_CAN_CREATE.getMessage()
+            );
         }
 
         // 가게 개수 검증
         if (shopRepository.countByUserIdAndDeletedAtIsNull(userId) >= 3) {
-            throw new RuntimeException("가게는 최대 3개 까지만 생성 가능합니다.");
+            throw new ResponseStatusException(
+                    MAX_SHOP_COUNT.getStatus(),
+                    MAX_SHOP_COUNT.getMessage()
+            );
         }
 
         // 받은 dto 를 바탕으로 DB에 저장할 shop 객체 생성
@@ -85,7 +93,7 @@ public class ShopService {
                 .openAt(shop.getOpenAt())
                 .closeAt(shop.getCloseAt())
                 .averageRating(getAverageRating(shop.getId()))
-                .reviewCount(reviewRepository.countByShop_Id(shop.getId()))
+                .reviewCount(reviewRepository.countByShop_IdAndDeletedAtIsNull(shop.getId()))
                 .minPrice(shop.getMinPrice())
                 .state(shop.getState())
                 .owner(shop.getUser().getUsername())
@@ -96,7 +104,7 @@ public class ShopService {
 
     // 평균 별점 구하기 메서드
     public Double getAverageRating(Long shopId) {
-        int reviewCount = reviewRepository.countByShop_Id(shopId);
+        int reviewCount = reviewRepository.countByShop_IdAndDeletedAtIsNull(shopId);
         int totalRating = reviewRepository.findSumRatingByShopId(shopId);
 
         // 0 으로 나누면 ArithmeticException 발생
@@ -111,7 +119,7 @@ public class ShopService {
     public ShopMenuResponseDto getShop(Long shopId) {
 
         // 가게 검증
-        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("가게를 찾을 수 없습니다."));
+        Shop shop = findShop(shopId);
 
         // 메뉴 리스트 생성
         List<Menu> menus = menuRepository.findAllByShop_Id(shopId);
@@ -152,7 +160,7 @@ public class ShopService {
         Pageable pageable = PageRequest.of(page, size);
 
         // 유저 검증
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = findUser(userId);
 
         // 유저 주소 추출
         String userAddress = user.getAddress();
@@ -179,15 +187,18 @@ public class ShopService {
     public ShopResponseDto updateShop(Long shopId, ShopRequestDto requestDto, Long userId) {
 
         // 유저 검증
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = findUser(userId);
 
         // 사장 검증
         if (!user.getRole().equals(OWNER)) {
-            throw new RuntimeException("사장님만 가게 정보 수정이 가능합니다.");
+            throw new ResponseStatusException(
+                    OWNER_CAN_UPDATE.getStatus(),
+                    OWNER_CAN_UPDATE.getMessage()
+            );
         }
 
         // 가게 검증
-        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("가게를 찾을 수 없습니다."));
+        Shop shop = findShop(shopId);
 
         // shop 엔티티 데이터 업데이트
         shop.update(requestDto);
@@ -199,15 +210,18 @@ public class ShopService {
     public StateShopResponseDto updateStateShop(Long shopId, StateShopRequestDto requestDto, Long userId) {
 
         // 유저 검증
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = findUser(userId);
 
         // 사장 검증
         if (!user.getRole().equals(OWNER)) {
-            throw new RuntimeException("사장님만 가게 정보 수정이 가능합니다.");
+            throw new ResponseStatusException(
+                    OWNER_CAN_UPDATE.getStatus(),
+                    OWNER_CAN_UPDATE.getMessage()
+            );
         }
 
         // 가게 검증
-        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("가게를 찾을 수 없습니다."));
+        Shop shop = findShop(shopId);
 
         // 가게 상태 업데이트
         shop.updateState(requestDto.getState());
@@ -223,15 +237,18 @@ public class ShopService {
     // 가게 폐업
     public void deleteShop(Long shopId, Long userId) {
         // 유저 검증
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = findUser(userId);
 
         // 사장 검증
         if (!user.getRole().equals(OWNER)) {
-            throw new RuntimeException("사장님만 가게 정보 수정이 가능합니다.");
+            throw new ResponseStatusException(
+                    OWNER_CAN_UPDATE.getStatus(),
+                    OWNER_CAN_UPDATE.getMessage()
+            );
         }
 
         // 가게 검증
-        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("가게를 찾을 수 없습니다."));
+        Shop shop = findShop(shopId);
 
         // 가게 삭제 (소프트 딜리트)
         shop.setDeletedAt();
@@ -242,5 +259,24 @@ public class ShopService {
         // 반환값 없으므로 패스
     }
 
+    // 유저 검증 메서드
+    private User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(
+                                USER_NOT_FOUND.getStatus(),
+                                USER_NOT_FOUND.getMessage()
+                        )
+                );
+    }
 
+    private Shop findShop(Long shopId) {
+        return shopRepository.findById(shopId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(
+                                SHOP_NOT_FOUND.getStatus(),
+                                SHOP_NOT_FOUND.getMessage()
+                        )
+                );
+    }
 }

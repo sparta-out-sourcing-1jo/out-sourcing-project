@@ -29,13 +29,20 @@ public enum ErrorCode {
 
     // 가게 관련 예외 코드
     SHOP_NOT_FOUND("해당 가게를 찾을 수 없습니다", NOT_FOUND),
+    OWNER_CAN_CREATE("사장님만 가게를 생성할 수 있습니다", CONFLICT),
+    OWNER_CAN_UPDATE("사장님만 가게를 수정할 수 있습니다", CONFLICT),
+    MAX_SHOP_COUNT("가게는 최대 3개까지 생성 가능합니다", BAD_REQUEST),
 
     // 주문 관련 예외 코드
+    ORDER_NOT_FINISH("주문이 완료되지 않았습니다", CONFLICT),
     INVALID_PRICE("최소 주문 가격을 넘겨주세요.", BAD_REQUEST),
     OVER_TIME_TO_OPEN("가게오픈시간이 아닙니다.", BAD_REQUEST),
-    ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다.", NOT_FOUND);
+    ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다.", NOT_FOUND),
+    
+    // 리뷰 관련 예외 코드
     REVIEW_NOT_FOUND("해당 리뷰를 찾을 수 없습니다", NOT_FOUND),
     REVIEW_ALREADY_EXIST("해당 주문에 대한 리뷰가 이미 존재합니다", BAD_REQUEST);
+    
     private final String message;
     private final HttpStatus status;
 

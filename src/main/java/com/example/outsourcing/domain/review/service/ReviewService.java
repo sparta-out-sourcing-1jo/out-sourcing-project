@@ -57,8 +57,8 @@ public class ReviewService {
             );
         }
 
-        User findUser = getUser(findOrder.getUserId());
-        Shop findShop = getShop(findOrder.getShopId());
+        User findUser = getUser(findOrder.getUser().getId());
+        Shop findShop = getShop(findOrder.getShop().getId());
 
         Review savedReview = Review.builder()
                 .content(dto.getContent())
@@ -100,7 +100,7 @@ public class ReviewService {
         User findUser = getUser(userId);
         checkUserPermission(reviewId, findUser.getId());
 
-        reviewRepository.deleteReviewById(reviewId);
+        getReview(reviewId).setDeletedAt();
     }
 
     // 주문을 가져오는 메서드 주문이 없을 시 NOT_FOUND
