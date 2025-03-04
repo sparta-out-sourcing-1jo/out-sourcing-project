@@ -1,6 +1,7 @@
 package com.example.outsourcing.domain.shop.service;
 
 import com.example.outsourcing.common.enums.ShopState;
+import com.example.outsourcing.domain.review.repository.ReviewRepository;
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
 import com.example.outsourcing.domain.shop.dto.request.StateShopRequestDto;
 import com.example.outsourcing.domain.shop.dto.response.PageShopResponseDto;
@@ -42,6 +43,9 @@ public class ShopServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ReviewRepository reviewRepository;
 
     @InjectMocks
     private ShopService shopService;
