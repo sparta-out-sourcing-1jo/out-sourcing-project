@@ -4,6 +4,7 @@ import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.common.enums.CancelReason;
 import com.example.outsourcing.common.enums.OrderState;
 import com.example.outsourcing.domain.menu.entity.Menu;
+import com.example.outsourcing.domain.order.dto.response.OrderResponseDto;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -44,6 +45,7 @@ public class Order extends BaseTimeEntity {
 
     private Double totalPrice;
 
+
     public Order(OrderState state, User user, Shop shop, Menu menu) {
         this.state = state;
         this.user = user;
@@ -62,4 +64,5 @@ public class Order extends BaseTimeEntity {
         this.state = orderState;
         this.reason = reason;
     }
+
 }

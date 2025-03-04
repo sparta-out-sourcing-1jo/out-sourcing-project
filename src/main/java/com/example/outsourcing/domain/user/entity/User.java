@@ -4,11 +4,9 @@ import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.common.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@NoArgsConstructor
 @Table(name = "users")
 public class User extends BaseTimeEntity {
 
