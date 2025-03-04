@@ -5,8 +5,8 @@ import com.example.outsourcing.domain.order.entity.Order;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Builder;
 
 @Getter
 @Entity
@@ -31,6 +31,7 @@ public class Review extends BaseTimeEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
+
     @Builder
     public Review(String content, Integer rating, User user, Shop shop, Order order) {
         this.content = content;
