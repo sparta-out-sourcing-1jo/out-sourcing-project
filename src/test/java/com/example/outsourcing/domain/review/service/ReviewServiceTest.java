@@ -181,6 +181,4 @@ public class ReviewServiceTest {
         // then
         assertNotNull(reviews);
     }
-
-
 }
