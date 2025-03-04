@@ -27,7 +27,7 @@ public abstract class BaseTimeEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime deletedAt;
 
-    public void setDeletedAt() {
+    public void setDeletedAt(LocalDateTime now) {
         this.deletedAt = LocalDateTime.now();
     }
 }
