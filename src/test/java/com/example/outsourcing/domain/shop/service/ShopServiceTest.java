@@ -298,7 +298,35 @@ public class ShopServiceTest {
         assertEquals(ShopState.OPEN, updateState.getState());
     }
 
+    // deleteShop 테스트
+    @Test
+    void shop_삭제_시_DeletedAt값이_Null이_아니다() {
+        // given
+        // 유저 생성
+        User user = new User();
+        Long userId = 1L;
+        ReflectionTestUtils.setField(user, "id", userId);
+        ReflectionTestUtils.setField(user, "role", OWNER);
 
-}
+        // 가게 생성
+        Shop shop = new Shop();
+        Long shopId = 1L;
+        ReflectionTestUtils.setField(shop, "id", shopId);
+        ReflectionTestUtils.setField(shop, "user", user);
+
+        // 유저 검증 강제 통과
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        // 가게 검증 강제 통과
+        when(shopRepository.save(any(Shop.class))).thenReturn(shop);
+        when(shopRepository.findById(shopId)).thenReturn(Optional.of(shop));
+
+        // when
+        shopService.deleteShop(shopId, userId);
+
+        // then
+        assertThat(shop.getDeletedAt()).isNotNull();
+    }
+    }
 
 
