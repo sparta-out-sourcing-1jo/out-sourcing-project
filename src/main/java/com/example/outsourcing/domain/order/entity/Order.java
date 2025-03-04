@@ -65,9 +65,4 @@ public class Order extends BaseTimeEntity {
         this.reason = reason;
     }
 
-
-
-
-
-
 }
