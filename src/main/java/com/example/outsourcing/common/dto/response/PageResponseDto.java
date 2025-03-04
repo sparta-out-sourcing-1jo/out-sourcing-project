@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 public class PageResponseDto<T> {
 
+    // 제네릭으로 자동 형 고정.
     private final List<T> content;
     private final int page;
     private final int size;

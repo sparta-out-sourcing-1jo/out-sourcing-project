@@ -4,13 +4,16 @@ import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.domain.order.entity.Order;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.user.entity.User;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+import lombok.Getter;
 
+@Getter
+@Entity
+@Table(name = "reviews")
 public class Review extends BaseTimeEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String content;
     private Integer rating;
