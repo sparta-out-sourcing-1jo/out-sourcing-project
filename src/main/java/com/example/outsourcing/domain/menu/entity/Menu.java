@@ -15,7 +15,7 @@ public class Menu extends BaseTimeEntity {
     private Long id;
 
     private String name;
-    private Double price;
+    private Integer price;
     private Integer orderCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
