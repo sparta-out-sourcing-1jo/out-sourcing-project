@@ -7,7 +7,6 @@ import com.example.outsourcing.domain.user.dto.request.UserChangeRoleRequest;
 import com.example.outsourcing.domain.user.dto.response.UserResponse;
 import com.example.outsourcing.domain.user.entity.User;
 import com.example.outsourcing.domain.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,11 +15,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+
+import static com.example.outsourcing.common.exception.ErrorCode.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -40,7 +39,7 @@ class UserServiceTest {
         //given
         User user = new User("test@example.com", "testPassword", "testName", "testAddress", UserRole.USER);
 
-        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+        when(userRepository.findUserByIdOrElseThrow(any())).thenReturn(user);
 
         //when
         UserResponse response = userService.getUser(1L);
@@ -54,7 +53,8 @@ class UserServiceTest {
     @DisplayName("해당하는 유저가 존재하지 않을 경우")
     void getUser_UserNotFound(){
         //given
-        when(userRepository.findById(any())).thenReturn(Optional.empty());
+        when(userRepository.findUserByIdOrElseThrow(any()))
+                .thenThrow(new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
 
         //when & then
         assertThrows(ResponseStatusException.class, () -> userService.getUser(1L));
@@ -68,7 +68,7 @@ class UserServiceTest {
 
         UserChangePasswordRequest request = new UserChangePasswordRequest("oldPassword", "newPassword");
 
-        when(userRepository.findUserById(any())).thenReturn(Optional.of(user));
+        when(userRepository.findUserByIdOrElseThrow(any())).thenReturn(user);
         when(passwordEncoder.matches("oldPassword", "testPassword")).thenReturn(true);
         when(passwordEncoder.matches("newPassword", "testPassword")).thenReturn(false);
         when(passwordEncoder.encode("newPassword")).thenReturn("newTestPassword");
