@@ -3,6 +3,7 @@ package com.example.outsourcing.domain.user.controller;
 import com.example.outsourcing.domain.auth.annotation.Auth;
 import com.example.outsourcing.domain.auth.dto.AuthUser;
 import com.example.outsourcing.domain.user.dto.request.UserChangePasswordRequest;
+import com.example.outsourcing.domain.user.dto.request.UserChangeRoleRequest;
 import com.example.outsourcing.domain.user.dto.response.UserResponse;
 import com.example.outsourcing.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,15 @@ public class UserController {
             @RequestBody UserChangePasswordRequest userChangePasswordRequest
     ) {
         userService.changePassword(authUser.getId(), userChangePasswordRequest);
+    }
+
+    @PutMapping("/users")
+    public void changeUserRole(@Auth AuthUser authUser, @RequestBody UserChangeRoleRequest userChangeRoleRequest){
+        userService.changeUserRole(authUser.getId(), userChangeRoleRequest);
+    }
+
+    @DeleteMapping("/users")
+    public void deleteUser(@Auth AuthUser authUser){
+        userService.deleteUser(authUser.getId());
     }
 }

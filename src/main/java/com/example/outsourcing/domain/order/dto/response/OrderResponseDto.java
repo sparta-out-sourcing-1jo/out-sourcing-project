@@ -30,15 +30,15 @@ public class OrderResponseDto {
 
     private final String menuName;
 
-    private final Double totalPrice;
+    private final Integer totalPrice;
 
     public OrderResponseDto(Order order) {
         this.id = order.getId();
         this.state = order.getState();
         this.userId = order.getUser().getId();
-        this.userName = order.getUserName();
+        this.userName = order.getUser().getUsername();
         this.shopId = order.getShop().getId();
-        this.shopName = order.getShopName();
+        this.shopName = order.getShop().getName();
         this.menuName = order.getMenuName();
         this.totalPrice = order.getTotalPrice();
         this.reason = order.getReason();
