@@ -55,21 +55,20 @@ class AuthServiceTest {
                     ReflectionTestUtils.setField(user, "id", 1L);
                     return user;
                 });
+        when(jwtUtil.createToken(anyLong(), anyString(), any(UserRole.class)))
+                .thenReturn("mockJwtToken");
 
         //when
         SignupResponse signupResponse = authService.signup(signupRequest);
 
         //then
         assertNotNull(signupResponse);
-        assertEquals(1L, signupResponse.getId());
-        assertEquals(signupRequest.getEmail(), signupResponse.getEmail());
-        assertEquals(signupRequest.getUserName(), signupResponse.getUsername());
-        assertEquals(signupRequest.getAddress(), signupResponse.getAddress());
-        assertEquals(UserRole.USER, signupResponse.getUserRole());
+        assertEquals("mockJwtToken", signupResponse.getBearerToken());
 
         verify(userRepository).existsByEmail(signupRequest.getEmail());
         verify(passwordEncoder).encode(signupRequest.getPassword());
         verify(userRepository).save(any(User.class));
+        verify(jwtUtil).createToken(anyLong(), anyString(), any(UserRole.class));
     }
 
     @Test

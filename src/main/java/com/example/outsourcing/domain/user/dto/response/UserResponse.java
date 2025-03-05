@@ -8,15 +8,9 @@ public class UserResponse {
 
     private final Long id;
     private final String email;
-    private final String username;
-    private final String address;
-    private final UserRole userRole;
 
-    public UserResponse(Long id, String email, String username, String address, UserRole userRole) {
+    public UserResponse(Long id, String email) {
         this.id = id;
         this.email = email;
-        this.username = username;
-        this.address = address;
-        this.userRole = userRole;
     }
 }
