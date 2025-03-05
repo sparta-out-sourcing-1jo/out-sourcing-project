@@ -7,13 +7,10 @@ import com.example.outsourcing.domain.user.dto.request.UserChangeRoleRequest;
 import com.example.outsourcing.domain.user.dto.response.UserResponse;
 import com.example.outsourcing.domain.user.entity.User;
 import com.example.outsourcing.domain.user.repository.UserRepository;
-import com.sun.jdi.request.InvalidRequestStateException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDateTime;
 
 import static com.example.outsourcing.common.exception.ErrorCode.*;
 
@@ -51,7 +48,7 @@ public class UserService {
     public void changeUserRole(long userId, UserChangeRoleRequest changeRoleRequest) {
         User user = userRepository.findUserByIdOrElseThrow(userId);
 
-        if(!user.getRole().name().equals(changeRoleRequest.getNewUserRole())){
+        if(user.getRole().name().equals(changeRoleRequest.getNewUserRole())){
             throw new ResponseStatusException(USER_ROLE_SAME_AS_OLD.getStatus(), USER_ROLE_SAME_AS_OLD.getMessage());
         }
 
@@ -68,7 +65,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long userId){
         User user = userRepository.findUserByIdOrElseThrow(userId);
-        user.setDeletedAt(LocalDateTime.now());
+        user.setDeletedAt();
 
         userRepository.save(user);
     }

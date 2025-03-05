@@ -28,10 +28,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     Optional<User> findUserByEmail(String email);
-
-    default void deleteUserById(Long userId){
-        User user = findUserByIdOrElseThrow(userId);
-        user.setDeletedAt(LocalDateTime.now());
-        save(user);
-    }
 }
