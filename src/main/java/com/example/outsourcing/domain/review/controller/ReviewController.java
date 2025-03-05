@@ -8,6 +8,7 @@ import com.example.outsourcing.domain.review.dto.request.CreateReviewRequestDto;
 import com.example.outsourcing.domain.review.dto.request.UpdateReviewRequestDto;
 import com.example.outsourcing.domain.review.dto.response.CreateReviewResponseDto;
 import com.example.outsourcing.domain.review.dto.response.GetReviewResponseDto;
+import com.example.outsourcing.domain.review.dto.response.UpdateReviewResponseDto;
 import com.example.outsourcing.domain.review.service.ReviewService;
 import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
@@ -29,7 +30,6 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 public class ReviewController {
 
     private final ReviewService reviewService;
-    private final JwtUtil jwtUtil;
 
     // 리뷰 생성
     @PostMapping("/orders/{orderId}/reviews")
@@ -66,11 +66,11 @@ public class ReviewController {
 
     // 리뷰 단건 수정
     @PutMapping("/reviews")
-    public ResponseEntity<GetReviewResponseDto> updateReview(
+    public ResponseEntity<UpdateReviewResponseDto> updateReview(
             @Valid @RequestBody UpdateReviewRequestDto dto,
             @RequestParam Long reviewId,
             @Auth AuthUser authUser
-            ) {
+    ) {
         return new ResponseEntity<>(
                 reviewService.updateReview(dto, reviewId, authUser.getId()),
                 HttpStatus.OK

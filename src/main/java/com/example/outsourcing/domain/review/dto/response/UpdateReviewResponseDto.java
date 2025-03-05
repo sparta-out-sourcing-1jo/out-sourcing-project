@@ -18,17 +18,20 @@ public class UpdateReviewResponseDto {
 
     private final String content;
     private final Integer rating;
+    private final String userRole;
+
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    public static GetReviewResponseDto of(Review review) {
-        return new GetReviewResponseDto(
+    public static UpdateReviewResponseDto of(Review review) {
+        return new UpdateReviewResponseDto(
                 review.getId(),
                 review.getUser().getId(),
                 review.getShop().getId(),
                 review.getOrder().getId(),
                 review.getContent(),
                 review.getRating(),
+                review.getUser().getRole().name(),
                 review.getCreatedAt(),
                 review.getUpdatedAt()
         );

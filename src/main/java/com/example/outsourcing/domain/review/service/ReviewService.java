@@ -41,6 +41,7 @@ public class ReviewService {
             CreateReviewRequestDto dto,
             Long orderId
     ) {
+        // 리뷰 어뷰징 방지 (1주문 당 1리뷰)
         if(reviewRepository.findByOrderId(orderId).isPresent()) {
             throw new ResponseStatusException(
                     REVIEW_ALREADY_EXIST.getStatus(),
@@ -57,17 +58,15 @@ public class ReviewService {
             );
         }
 
-        User findUser = getUser(findOrder.getUser().getId());
-        Shop findShop = getShop(findOrder.getShop().getId());
-
         Review savedReview = Review.builder()
                 .content(dto.getContent())
                 .rating(dto.getRating())
-                .user(findUser)
-                .shop(findShop)
+                .user(findOrder.getUser())
+                .shop(findOrder.getShop())
                 .order(findOrder)
                 .build();
 
+        reviewRepository.save(savedReview);
         return CreateReviewResponseDto.of(savedReview);
     }
 
@@ -75,20 +74,19 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public PageResponseDto<GetReviewResponseDto> findReviews(Long shopId, Pageable pageable) {
         Shop findShop = getShop(shopId);
-        Page<Review> reviews = reviewRepository.findAllReviewsByShop(findShop, pageable);
+        Page<Review> reviews = reviewRepository.findAllReviewsByShopId(findShop.getId(), pageable);
         return new PageResponseDto<>(reviews.map(GetReviewResponseDto::of));
     }
 
     // 리뷰 단건 수정 서비스 로직
     @Transactional
-    public GetReviewResponseDto updateReview(
+    public UpdateReviewResponseDto updateReview(
             UpdateReviewRequestDto dto,
             Long reviewId,
             Long userId
     ) {
-        User findUser = getUser(userId);
+        checkUserPermission(reviewId, userId);
         Review findReview = getReview(reviewId);
-        checkUserPermission(findReview.getId(), findUser.getId());
 
         findReview.reviewUpdate(dto.getContent(), dto.getRating());
         return UpdateReviewResponseDto.of(findReview);
@@ -97,8 +95,7 @@ public class ReviewService {
     // 리뷰 단건 삭제 서비스 로직
     @Transactional
     public void deleteReview(Long reviewId, Long userId) {
-        User findUser = getUser(userId);
-        checkUserPermission(reviewId, findUser.getId());
+        checkUserPermission(reviewId, userId);
 
         getReview(reviewId).setDeletedAt();
     }
@@ -149,7 +146,7 @@ public class ReviewService {
     
     // 해당 유저가 해당 리뷰를 작성한 유저인지 확인하는 메서드
     protected void checkUserPermission(Long reviewId, Long userId) {
-        if(ObjectUtils.nullSafeEquals(userId, getReview(reviewId).getUser().getId())) {
+        if(!ObjectUtils.nullSafeEquals(userId, getReview(reviewId).getUser().getId())) {
             throw new ResponseStatusException(
                     USER_ACCESS_DENIED.getStatus(),
                     USER_ACCESS_DENIED.getMessage()

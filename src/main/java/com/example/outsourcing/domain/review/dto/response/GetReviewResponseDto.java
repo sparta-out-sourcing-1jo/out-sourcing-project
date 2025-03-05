@@ -18,6 +18,8 @@ public class GetReviewResponseDto {
 
     private final String content;
     private final Integer rating;
+    private final String userRole;
+
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -29,6 +31,7 @@ public class GetReviewResponseDto {
                 review.getOrder().getId(),
                 review.getContent(),
                 review.getRating(),
+                review.getUser().getRole().name(),
                 review.getCreatedAt(),
                 review.getUpdatedAt()
         );
