@@ -17,9 +17,9 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<UserResponse> getUser(@PathVariable long userId) {
-        return ResponseEntity.ok(userService.getUser(userId));
+    @GetMapping("/users/profile")
+    public ResponseEntity<UserResponse> getUser(@Auth AuthUser authUser) {
+        return ResponseEntity.ok(userService.getUser(authUser.getId()));
     }
 
     @PutMapping("/users/password")
@@ -39,7 +39,7 @@ public class UserController {
         return ResponseEntity.ok("역활 변경이 완료되었습니다.");
     }
 
-    @DeleteMapping("/users")
+    @DeleteMapping("/users/delete")
     public ResponseEntity<String> deleteUser(@Auth AuthUser authUser){
         userService.deleteUser(authUser.getId());
 
