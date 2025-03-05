@@ -4,6 +4,8 @@ import com.example.outsourcing.common.aop.annotation.Order;
 import com.example.outsourcing.common.dto.response.PageResponseDto;
 import com.example.outsourcing.common.enums.OrderState;
 import com.example.outsourcing.common.enums.UserRole;
+import com.example.outsourcing.domain.auth.annotation.Auth;
+import com.example.outsourcing.domain.auth.dto.AuthUser;
 import com.example.outsourcing.domain.order.dto.request.CreateOrderRequestDto;
 import com.example.outsourcing.domain.order.dto.request.UpdateOrderRequestDto;
 import com.example.outsourcing.domain.order.dto.response.OrderResponseDto;
@@ -27,36 +29,34 @@ public class OrderController {
     // 주문생성
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder (
-            @RequestParam Long userId, String role,
-            @RequestBody CreateOrderRequestDto dto
+            @Auth AuthUser authUser,
+            @PageableDefault(page = 1, size = 10, sort = "updatedAt", direction = DESC) Pageable pageable
     ){
-        UserRole userRole = UserRole.valueOf(role.toUpperCase());
-        OrderResponseDto savedOrder = orderService.createOrder(userId, userRole, dto);
+        Pageable convertPageable = PageRequest.of(pageable.getPageNumber()-1, pageable.getPageSize(), pageable.getSort());
+        OrderResponseDto savedOrder = orderService.createOrder(authUser, convertPageable);
         return ResponseEntity.ok(savedOrder);
     }
 
-    // 주문단건조회
-    @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponseDto> findOrder(
-            @RequestParam Long userId, String role,
-            @PathVariable Long orderId
-    ){
-        UserRole userRole = UserRole.valueOf(role.toUpperCase());
-        OrderResponseDto findOrder = orderService.findOrder(userId, userRole, orderId);
-        return ResponseEntity.ok(findOrder);
-    }
-
-    // 주문 목록 조회
+    // 주문 단건 조회
     @GetMapping
-    public ResponseEntity<PageResponseDto<OrderResponseDto>> findOrders(
-            @RequestParam Long userId, String role,
-            @RequestParam(required = false) Long shopId, OrderState orderState,
+    public ResponseEntity<OrderResponseDto> findOrder(
+            @Auth AuthUser authUser,
+            @RequestParam(required = false) Long orderId,
             @PageableDefault(page = 1, size = 10, sort = "updatedAt", direction = DESC) Pageable pageable
     ){
-        UserRole userRole = UserRole.valueOf(role.toUpperCase());
         Pageable convertPageable = PageRequest.of(pageable.getPageNumber()-1, pageable.getPageSize(), pageable.getSort());
-        PageResponseDto<OrderResponseDto> findOrders = orderService.findOrders(userId, userRole, shopId, orderState, convertPageable);
-        return ResponseEntity.ok(findOrders);
+        return ResponseEntity.ok(orderService.findOrder(authUser, orderId, convertPageable));
+    }
+
+    // 주문 다건 조회
+    @GetMapping
+    public ResponseEntity<PageResponseDto<OrderResponseDto>> findOrders(
+            @Auth AuthUser authUser,
+            @RequestParam(required = false) OrderState orderState, Long shopId,
+            @PageableDefault(page = 1, size = 10, sort = "updatedAt", direction = DESC) Pageable pageable
+    ){
+        Pageable convertPageable = PageRequest.of(pageable.getPageNumber()-1, pageable.getPageSize(), pageable.getSort());
+        return ResponseEntity.ok(orderService.findOrders(authUser, orderState, shopId,convertPageable));
     }
 
     // 주문 갱신
@@ -64,12 +64,13 @@ public class OrderController {
     @Order
     @PatchMapping("/{orderId}")
     public ResponseEntity<OrderResponseDto> updateOrder(
-            @RequestParam String role, Long shopId,
+            @Auth AuthUser authUser,
             @PathVariable Long orderId,
-            @RequestBody UpdateOrderRequestDto dto
+            @RequestParam Long shopId,
+            @RequestBody UpdateOrderRequestDto dto,
+            @PageableDefault(page = 1, size = 10, sort = "updatedAt", direction = DESC) Pageable pageable
     ){
-        UserRole userRole = UserRole.valueOf(role.toUpperCase());
-        OrderResponseDto updateOrder = orderService.updateOrder(userRole, shopId, orderId, dto);
-        return ResponseEntity.ok(updateOrder);
+        Pageable convertPageable = PageRequest.of(pageable.getPageNumber()-1, pageable.getPageSize(), pageable.getSort());
+        return ResponseEntity.ok(orderService.updateOrder(authUser, shopId, orderId, dto, convertPageable));
     }
 }

@@ -3,12 +3,15 @@ package com.example.outsourcing.domain.shop.entity;
 import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.common.enums.ShopCategory;
 import com.example.outsourcing.common.enums.ShopState;
+import com.example.outsourcing.domain.order.entity.Order;
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -44,6 +47,9 @@ public class Shop extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> shopOrders;
 
     // 가게 단건 수정용 생성자 메서드
     public void update(ShopRequestDto requestDto) {

@@ -69,12 +69,17 @@ public class OrderControllerAopLoggingTest {
         ReflectionTestUtils.setField(menu, "price", 10000.0);
         ReflectionTestUtils.setField(menu, "shop", shop);
 
+        // 장바구니 엔티티 생성
+
         // Order 엔티티 생성 후 id 설정
-        Order order = new Order(state, user, shop, menu);
+        Order order = new Order();
         ReflectionTestUtils.setField(order, "id", 1L);
+        ReflectionTestUtils.setField(order, "state", OrderState.CLIENT_ACCEPT);
         ReflectionTestUtils.setField(order, "reason", reason);
         ReflectionTestUtils.setField(order, "user", user);
         ReflectionTestUtils.setField(order, "shop", shop);
+
+
 
         return new OrderResponseDto(order);
     }

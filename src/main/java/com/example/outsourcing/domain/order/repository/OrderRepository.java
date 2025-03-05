@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -21,20 +22,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Override
     Optional<Order> findById(Long orderId);
 
-    Page<Order> findOrdersByUserAndState(User user, OrderState state, Pageable pageable);
 
-    Page<Order> findOrdersByUserAndShopAndState(User user, Shop shop, OrderState state, Pageable pageable);
+    List<Order> findOrdersByShopIn(Collection<Shop> shops);
 
-    Page<Order> findOrdersByShopIn(Collection<Shop> shops, Pageable pageable);
+    List<Order> findOrdersByUser(User user);
 
-    Page<Order> findOrdersByShopInAndState(Collection<Shop> shops, OrderState state, Pageable pageable);
+    List<Order> findOrdersByUserAndState(User user, OrderState state);
 
-    Page<Order> findOrdersByShop(Shop shop, Pageable pageable);
-
-    Page<Order> findOrdersByShopAndState(Shop shop, OrderState state, Pageable pageable);
-
-    Page<Order> findOrdersByUser(User user, Pageable pageable);
-
-    Page<Order> findOrdersByUserAndShop(User user, Shop shop, Pageable pageable);
-
+    List<Order> findOrdersByShop(Shop shop);
 }

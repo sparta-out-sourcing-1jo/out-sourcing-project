@@ -16,9 +16,13 @@ public class Menu extends BaseTimeEntity {
 
     private String name;
     private Integer price;
-    private Integer orderCount;
+    private Integer orderCount = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
+
+    public void increaseOrderCount(int quantity) {
+        this.orderCount = this.orderCount + quantity;
+    }
 }

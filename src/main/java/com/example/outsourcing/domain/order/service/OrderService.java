@@ -4,19 +4,19 @@ import com.example.outsourcing.common.dto.response.PageResponseDto;
 import com.example.outsourcing.common.enums.OrderState;
 import com.example.outsourcing.common.enums.ShopState;
 import com.example.outsourcing.common.enums.UserRole;
-import com.example.outsourcing.domain.menu.entity.Menu;
+import com.example.outsourcing.domain.auth.dto.AuthUser;
 import com.example.outsourcing.domain.menu.repository.MenuRepository;
-import com.example.outsourcing.domain.order.dto.request.CreateOrderRequestDto;
 import com.example.outsourcing.domain.order.dto.request.UpdateOrderRequestDto;
 import com.example.outsourcing.domain.order.dto.response.OrderResponseDto;
+import com.example.outsourcing.domain.order.entity.Cart;
 import com.example.outsourcing.domain.order.entity.Order;
+import com.example.outsourcing.domain.order.repository.CartRepository;
 import com.example.outsourcing.domain.order.repository.OrderRepository;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.shop.repository.ShopRepository;
 import com.example.outsourcing.domain.user.entity.User;
 import com.example.outsourcing.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.*;
 
 import static com.example.outsourcing.common.exception.ErrorCode.*;
+import static com.example.outsourcing.common.util.Util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
+    private final CartRepository cartRepository;
 
     /**
      * 1. 유저가 아니면 주문 생성 못함.
@@ -41,72 +43,100 @@ public class OrderService {
      * 3. 가게 문 닫으면 주문 생성 못함.
      */
     @Transactional
-    public OrderResponseDto createOrder(Long userId, UserRole userRole, CreateOrderRequestDto dto){
-        if (!UserRole.USER.equals(userRole)) {
-            throw new ResponseStatusException(USER_ACCESS_DENIED.getStatus(), USER_ACCESS_DENIED.getMessage());
-        }
+    public OrderResponseDto createOrder(AuthUser authUser, Pageable pageable){
+        ifTrueThenThrow(
+                !UserRole.USER.equals(authUser.getUserRole()),
+                USER_ACCESS_DENIED
+        );
 
-        User user = userRepository.findUserById(userId).orElseThrow(
+        User user = userRepository.findUserById(authUser.getId()).orElseThrow(
                 () -> new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
-        Shop shop = shopRepository.findShopById(dto.getShopId()).orElseThrow(
-                () -> new ResponseStatusException(SHOP_NOT_FOUND.getStatus(), SHOP_NOT_FOUND.getMessage()));
-        Menu menu = menuRepository.findMenuById(dto.getMenuId()).orElseThrow(
-                () -> new ResponseStatusException(MENU_NOT_FOUND.getStatus(), MENU_NOT_FOUND.getMessage()));
 
-        if (shop.getMinPrice() > menu.getPrice()) {
-            throw new ResponseStatusException(INVALID_PRICE.getStatus(), INVALID_PRICE.getMessage());
-        }
-        if (ShopState.CLOSE.equals(shop.getState())) {
-            throw new ResponseStatusException(OVER_TIME_TO_OPEN.getStatus(), OVER_TIME_TO_OPEN.getMessage());
-        }
+        Cart cart = cartRepository.findCartByUserAndDeletedAtIsNull(user);
 
-        Order order = new Order(OrderState.CLIENT_ACCEPT, user, shop, menu);
-        Order savedOrder = orderRepository.save(order);
-        return new OrderResponseDto(savedOrder);
+        ifTrueThenThrow(
+                ShopState.CLOSE.equals(cart.getShop().getState()),
+                OVER_TIME_TO_OPEN
+        );
+
+        ifTrueThenThrow(
+                cart.getShop().getMinPrice() > cart.getTotalPrice(),
+                INVALID_PRICE
+        );
+
+        Order newOrder = new Order(OrderState.CLIENT_ACCEPT, user, cart);
+        Order order = orderRepository.save(newOrder);
+
+        cart.getCartItems().forEach(cartItem -> cartItem.updateOrder(order));
+        cart.setDeletedAt();
+
+        return new OrderResponseDto(order, pageable);
     }
 
-    /**
-     * 1. 유저 혹은 사장이 아니면 조회 못함
-     * 2. 조회하는 본인이 주문 생성자도 아니고 가게사장도 아니면 조회 못함
-     */
     @Transactional(readOnly = true)
-    public OrderResponseDto findOrder(Long userId, UserRole userRole, Long orderId){
-        if (!EnumSet.of(UserRole.USER, UserRole.OWNER).contains(userRole)) {
-            throw new ResponseStatusException(USER_ACCESS_DENIED.getStatus(), USER_ACCESS_DENIED.getMessage());
-        }
+    public OrderResponseDto findOrder(AuthUser authUser, Long orderId, Pageable pageable) {
+        ifTrueThenThrow (
+                !EnumSet.of(UserRole.USER, UserRole.OWNER).contains(authUser.getUserRole()),
+                USER_ACCESS_DENIED
+        );
 
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new ResponseStatusException(ORDER_NOT_FOUND.getStatus(), ORDER_NOT_FOUND.getMessage()));
 
-        if (!Objects.equals(order.getUser().getId(), userId) && !Objects.equals(order.getShop().getUser().getId(), userId)) {
-            throw new ResponseStatusException(USER_ACCESS_DENIED.getStatus(), USER_ACCESS_DENIED.getMessage());
-        }
+        ifTrueThenThrow (
+                !order.getUser().getId().equals(authUser.getId())
+                || !order.getShop().getId().equals(authUser.getId()),
+                USER_ACCESS_DENIED
+        );
 
-        return new OrderResponseDto(order);
+        return new OrderResponseDto(order, pageable);
     }
 
     /**
      * 1. 유저 혹은 사장이 아니면 조회 못함
      * 2. 그 외에는 기본적으로 빈 페이지라도 응답함.
-     * 3. userRole,shopId, orderState 에 따라 조회가 다르게 실행됨.
+     * 3. userRole, orderState 에 따라 조회가 다르게 실행됨.
      *  3-1. 유저는 본인꺼만 검색가능, 사장은 본인 가게꺼만 검색가능
-     *  3-2. 지정한 가게가 있으면 가게를 포함하여 주문검색
+     *  3-2. (사장전용) 지정한 가게가 있으면 가게를 포함하여 주문검색
      *  3-3. 지정한 주문상태가 있으면 주문상태를 포함하여 주문검색
      */
     @Transactional(readOnly = true)
-    public PageResponseDto<OrderResponseDto> findOrders(Long userId, UserRole userRole, Long shopId, OrderState orderState, Pageable pageable) {
-        if (!EnumSet.of(UserRole.USER, UserRole.OWNER).contains(userRole)) {
-            throw new ResponseStatusException(USER_ACCESS_DENIED.getStatus(), USER_ACCESS_DENIED.getMessage());
+    public PageResponseDto<OrderResponseDto> findOrders(AuthUser authUser, OrderState orderState, Long shopId, Pageable pageable) {
+        ifTrueThenThrow (
+                !EnumSet.of(UserRole.USER, UserRole.OWNER).contains(authUser.getUserRole()),
+                USER_ACCESS_DENIED
+        );
+
+        User user = userRepository.findUserById(authUser.getId()).orElseThrow(
+                () -> new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
+
+        List<Order> orders = Collections.emptyList();
+        if (UserRole.USER.equals(authUser.getUserRole()) && orderState == null){
+            orders = orderRepository.findOrdersByUser(user);
+        }
+        if (UserRole.USER.equals(authUser.getUserRole()) && orderState != null){
+            orders = orderRepository.findOrdersByUserAndState(user,orderState);
+        }
+        if (UserRole.OWNER.equals(authUser.getUserRole()) && orderState == null && shopId == null) {
+            List<Shop> shops = shopRepository.findShopsByUserAndDeletedAtIsNull(user);
+            orders = orderRepository.findOrdersByShopIn(shops);
+        }
+        if (UserRole.OWNER.equals(authUser.getUserRole()) && orderState != null && shopId == null) {
+            List<Shop> shops = shopRepository.findShopsByUserAndDeletedAtIsNull(user);
+            orders = orderRepository.findOrdersByShopIn(shops);
+        }
+        if (UserRole.OWNER.equals(authUser.getUserRole()) && orderState == null && shopId != null) {
+            Shop shop = shopRepository.findShopById(shopId).orElseThrow(
+                    () -> new ResponseStatusException(SHOP_NOT_FOUND.getStatus(), SHOP_NOT_FOUND.getMessage()));
+            orders = orderRepository.findOrdersByShop(shop);
+        }
+        if (UserRole.OWNER.equals(authUser.getUserRole()) && orderState != null && shopId != null) {
+            Shop shop = shopRepository.findShopById(shopId).orElseThrow(
+                    () -> new ResponseStatusException(SHOP_NOT_FOUND.getStatus(), SHOP_NOT_FOUND.getMessage()));
+            orders = orderRepository.findOrdersByShop(shop);
         }
 
-        User user = userRepository.findUserById(userId)
-                .orElseThrow(() -> new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
-
-        Page<Order> orders = UserRole.USER.equals(userRole)
-                ? getOrdersForUser(user, shopId, orderState, pageable)
-                : getOrdersForOwner(user, shopId, orderState, pageable);
-
-        return new PageResponseDto<>(orders.map(OrderResponseDto::toDtoOrder));
+        return OrderResponseDto.toPageOrderDto(orders, pageable);
     }
 
     /**
@@ -117,74 +147,57 @@ public class OrderService {
      *  3-2. 중간에 갱신 의사가 없다면, deletedAt 세팅
      */
     @Transactional
-    public OrderResponseDto updateOrder(UserRole userRole, Long shopId, Long orderId, UpdateOrderRequestDto dto) {
-        if (!EnumSet.of(UserRole.USER, UserRole.OWNER).contains(userRole)) {
-            throw new ResponseStatusException(USER_ACCESS_DENIED.getStatus(), USER_ACCESS_DENIED.getMessage());
-        }
+    public OrderResponseDto updateOrder(AuthUser authUser, Long shopId, Long orderId, UpdateOrderRequestDto dto, Pageable pageable) {
+        ifTrueThenThrow(
+                !EnumSet.of(UserRole.USER, UserRole.OWNER).contains(authUser.getUserRole()),
+                USER_ACCESS_DENIED
+        );
 
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new ResponseStatusException(ORDER_NOT_FOUND.getStatus(), ORDER_NOT_FOUND.getMessage()));
 
-        if (
-                OrderState.FINISH.equals(order.getState())
-                || order.getDeletedAt() != null
-                || !order.getShop().getId().equals(shopId)
+        ifTrueThenThrow(
+                OrderState.FINISH.equals(order.getState())         // 주문 상태가 Finish 이거나
+                || order.getDeletedAt() != null                          // 주문이 소프트딜리트 당한 적이 없거나
+                || !order.getShop().getId().equals(shopId),              // 주문의 가게Id 와 요청한 가게Id가 다르면
+                USER_ACCESS_DENIED                                       // 인가 예외 발생
+        );
+
+        if ( // 1. 주문 생성 이후 사장이 주문수락
+                OrderState.CLIENT_ACCEPT.equals(order.getState()) 
+                && UserRole.OWNER.equals(authUser.getUserRole()) 
+                && dto.getIsProceed()
         ) {
-            throw new ResponseStatusException(USER_ACCESS_DENIED.getStatus(), USER_ACCESS_DENIED.getMessage());
-        }
-
-        if (OrderState.CLIENT_ACCEPT.equals(order.getState()) && UserRole.USER.equals(userRole) && !dto.getIsProceed()) {
-            order.updateOrderState(OrderState.CLIENT_CANCEL, dto.getReason());
-            order.setDeletedAt();
-        }
-        if (OrderState.OWNER_ACCEPT.equals(order.getState()) && UserRole.OWNER.equals(userRole) && !dto.getIsProceed()) {
-            order.updateOrderState(OrderState.OWNER_CANCEL, dto.getReason());
-            order.setDeletedAt();
-        }
-
-        if (OrderState.CLIENT_ACCEPT.equals(order.getState()) && UserRole.OWNER.equals(userRole) && dto.getIsProceed()) {
             order.updateOrderState(OrderState.OWNER_ACCEPT);
         }
-        if (OrderState.OWNER_ACCEPT.equals(order.getState()) && UserRole.USER.equals(userRole) && dto.getIsProceed()) {
-            order.updateOrderState(OrderState.FINISH);
+        if ( // 2. 주문 생성 이후 고객이 주문취소 (주문 끝)
+                OrderState.CLIENT_ACCEPT.equals(order.getState())
+                        && UserRole.USER.equals(authUser.getUserRole())
+                        && !dto.getIsProceed()
+        ) {
+            order.updateOrderState(OrderState.CLIENT_CANCEL, dto.getReason());
+            order.setDeletedAt(); // 주문 소프트 딜리트
         }
 
-        return new OrderResponseDto(order);
+        if ( // 3. 사장 주문수락 이후 고객이 최종수락 (주문 끝)
+                OrderState.OWNER_ACCEPT.equals(order.getState())
+                        && UserRole.USER.equals(authUser.getUserRole())
+                        && dto.getIsProceed()
+        ) {
+            order.updateOrderState(OrderState.FINISH);
+            order.getOrderMenus().forEach(cartItem -> cartItem.getMenu().increaseOrderCount(cartItem.getQuantity())); // 메뉴의 주문 수 증가
+        }
+        if ( // 4. 사장 주문수락 이후 사장이 주문취소 (주문 끝)
+                OrderState.OWNER_ACCEPT.equals(order.getState())
+                        && UserRole.OWNER.equals(authUser.getUserRole())
+                        && !dto.getIsProceed()
+        ) {
+            order.updateOrderState(OrderState.OWNER_CANCEL, dto.getReason());
+            order.setDeletedAt(); // 주문 소프트 딜리트
+        }
+
+        return new OrderResponseDto(order, pageable);
     }
 
 
-    // 일반 사용자 주문 조회 메서드
-    private Page<Order> getOrdersForUser(User user, Long shopId, OrderState orderState, Pageable pageable) {
-        return Optional.ofNullable(shopId)
-                .map(id -> {
-                    Shop shop = shopRepository.findShopById(id)
-                            .orElseThrow(() -> new ResponseStatusException(SHOP_NOT_FOUND.getStatus(), SHOP_NOT_FOUND.getMessage()));
-                    return (orderState == null)
-                            ? orderRepository.findOrdersByUserAndShop(user, shop, pageable)
-                            : orderRepository.findOrdersByUserAndShopAndState(user, shop, orderState, pageable);
-                })
-                .orElseGet(() ->
-                        (orderState == null)
-                                ? orderRepository.findOrdersByUser(user, pageable)
-                                : orderRepository.findOrdersByUserAndState(user, orderState, pageable)
-                );
-    }
-
-    // 가게 사장 주문 조회 메서드
-    private Page<Order> getOrdersForOwner(User user, Long shopId, OrderState orderState, Pageable pageable) {
-        return Optional.ofNullable(shopId)
-                .map(id -> {
-                    Shop shop = shopRepository.findShopById(id)
-                            .orElseThrow(() -> new ResponseStatusException(SHOP_NOT_FOUND.getStatus(), SHOP_NOT_FOUND.getMessage()));
-                    return (orderState == null)
-                            ? orderRepository.findOrdersByShop(shop, pageable)
-                            : orderRepository.findOrdersByShopAndState(shop, orderState, pageable);
-                })
-                .orElseGet(() -> {
-                    List<Shop> shops = shopRepository.findShopsByDeletedAtIsNullAndUser(user, pageable);
-                    return (orderState == null)
-                            ? orderRepository.findOrdersByShopIn(shops, pageable)
-                            : orderRepository.findOrdersByShopInAndState(shops, orderState, pageable);
-                });
-    }
 }

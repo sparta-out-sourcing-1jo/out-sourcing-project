@@ -1,11 +1,17 @@
 package com.example.outsourcing.domain.order.dto.response;
 
+import com.example.outsourcing.common.dto.response.PageResponseDto;
 import com.example.outsourcing.common.enums.CancelReason;
 import com.example.outsourcing.common.enums.OrderState;
+import com.example.outsourcing.domain.order.entity.Cart;
+import com.example.outsourcing.domain.order.entity.CartItem;
 import com.example.outsourcing.domain.order.entity.Order;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
@@ -28,23 +34,33 @@ public class OrderResponseDto {
 
     private final String shopName;
 
-    private final String menuName;
+    private final PageResponseDto<CartItemResponseDto> orderMenus;
 
-    private final Double totalPrice;
+    private final Integer totalPrice;
 
-    public OrderResponseDto(Order order) {
+    public OrderResponseDto(Order order, Pageable pageable) {
         this.id = order.getId();
         this.state = order.getState();
-        this.userId = order.getUser().getId();
-        this.userName = order.getUserName();
-        this.shopId = order.getShop().getId();
-        this.shopName = order.getShopName();
-        this.menuName = order.getMenuName();
-        this.totalPrice = order.getTotalPrice();
         this.reason = order.getReason();
+        this.userId = order.getUser().getId();
+        this.userName = order.getUser().getUsername();
+        this.shopId = order.getShop().getId();
+        this.shopName = order.getShop().getName();
+        this.orderMenus = CartItemResponseDto.toPageCartItemDto(order.getOrderMenus(), pageable);
+        this.totalPrice = order.getTotalPrice();
     }
 
-    public static OrderResponseDto toDtoOrder(Order order){
-        return new OrderResponseDto(order);
+    public static OrderResponseDto toDtoOrder(Order order, Pageable pageable){
+        return new OrderResponseDto(order, pageable);
+    }
+
+    public static PageResponseDto<OrderResponseDto> toPageOrderDto(List<Order> orders, Pageable pageable){
+        return new PageResponseDto<>(new PageImpl<>(
+                orders.stream()
+                        .map(order -> OrderResponseDto.toDtoOrder(order, pageable))
+                        .toList(),
+                pageable,
+                orders.size()
+        ));
     }
 }

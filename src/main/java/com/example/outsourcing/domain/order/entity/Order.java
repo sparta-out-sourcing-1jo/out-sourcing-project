@@ -3,12 +3,13 @@ package com.example.outsourcing.domain.order.entity;
 import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.common.enums.CancelReason;
 import com.example.outsourcing.common.enums.OrderState;
-import com.example.outsourcing.domain.menu.entity.Menu;
 import com.example.outsourcing.domain.shop.entity.Shop;
 import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Getter
 @Entity
@@ -36,17 +37,18 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
-    private String menuName;
+    @OneToMany(mappedBy = "cart_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> orderMenus;
 
     private Integer totalPrice;
 
 
-    public Order(OrderState state, User user, Shop shop, Menu menu) {
+    public Order(OrderState state, User user, Cart cart) {
         this.state = state;
         this.user = user;
-        this.shop = shop;
-        this.menuName = menu.getName();
-        this.totalPrice = menu.getPrice();
+        this.shop = cart.getShop();
+        this.orderMenus = cart.getCartItems();
+        this.totalPrice = cart.getTotalPrice();
     }
 
     public void updateOrderState(OrderState orderState){
