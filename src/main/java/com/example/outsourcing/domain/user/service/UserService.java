@@ -24,7 +24,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse getUser(long userId){
         User user = userRepository.findUserByIdOrElseThrow(userId);
-        return new UserResponse(user.getId(), user.getEmail());
+        return new UserResponse(user.getId(), user.getEmail(), user.getUsername(), user.getPassword(), user.getRole());
     }
 
     @Transactional
