@@ -50,7 +50,7 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findUserByEmail(loginRequest.getEmail()).orElseThrow(
+        User user = userRepository.findUserByEmailAndDeletedAtIsNull(loginRequest.getEmail()).orElseThrow(
                 ()->new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
 
         if(!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {

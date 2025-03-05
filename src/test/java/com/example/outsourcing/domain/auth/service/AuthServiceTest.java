@@ -95,7 +95,7 @@ class AuthServiceTest {
         User user = new User("test@example.com", "encodedPassword", "testName", "testAddress", UserRole.USER);
         ReflectionTestUtils.setField(user, "id", 1L);
 
-        when(userRepository.findUserByEmail(request.getEmail())).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmailAndDeletedAtIsNull(request.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(true);
         when(jwtUtil.createToken(user.getId(), user.getEmail(), user.getRole())).thenReturn("mockJwtToken");
 
@@ -106,7 +106,7 @@ class AuthServiceTest {
         assertNotNull(response);
         assertEquals("mockJwtToken", response.getBearerToken());
 
-        verify(userRepository).findUserByEmail(request.getEmail());
+        verify(userRepository).findUserByEmailAndDeletedAtIsNull(request.getEmail());
         verify(passwordEncoder).matches(request.getPassword(), user.getPassword());
         verify(jwtUtil).createToken(user.getId(), user.getEmail(), user.getRole());
     }
