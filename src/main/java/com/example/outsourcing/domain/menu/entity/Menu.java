@@ -18,14 +18,14 @@ public class Menu extends BaseTimeEntity {
     private Long id;
 
     private String name;
-    private Double price;
+    private Integer price;
     private Integer orderCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
-    public Menu(String name, Double price, Integer orderCount) {
+    public Menu(String name, Integer price, Integer orderCount) {
         this.name = name;
         this.price = price;
         this.orderCount = orderCount;
