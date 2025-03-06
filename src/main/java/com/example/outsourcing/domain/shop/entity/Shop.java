@@ -39,7 +39,7 @@ public class Shop extends BaseTimeEntity {
     private LocalTime closeAt;
     private Double averageRating;
     private Integer reviewCount;
-    private Double minPrice;
+    private Integer minPrice;
 
     @Enumerated(EnumType.STRING)
     private ShopState state;

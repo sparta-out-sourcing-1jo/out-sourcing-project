@@ -9,7 +9,7 @@ public class PageShopResponseDto {
     private String address;
     private String category;
     private Double averageRating;
-    private Double minPrice;
+    private Integer minPrice;
 
     ShopService shopService;
 

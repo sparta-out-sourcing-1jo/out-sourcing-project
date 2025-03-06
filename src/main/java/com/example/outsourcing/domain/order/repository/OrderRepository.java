@@ -30,4 +30,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findOrdersByUserAndState(User user, OrderState state);
 
     List<Order> findOrdersByShop(Shop shop);
+
+    List<Order> findOrdersByShopAndState(Shop shop, OrderState state);
+
+    List<Order> findOrdersByStateAndShopIn(OrderState state, Collection<Shop> shops);
+
+    Page<Order> findOrdersByUser(User user, Pageable pageable);
 }

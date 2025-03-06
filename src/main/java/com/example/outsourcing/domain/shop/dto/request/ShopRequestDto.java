@@ -26,5 +26,5 @@ public class ShopRequestDto {
 
     private LocalTime openAt;
     private LocalTime closeAt;
-    private Double minPrice;
+    private Integer minPrice;
 }

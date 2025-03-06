@@ -20,7 +20,7 @@ public class ShopResponseDto {
     private LocalTime closeAt;
     private Double averageRating;
     private Integer reviewCount;
-    private Double minPrice;
+    private Integer minPrice;
     private ShopState state;
     private String owner;
     private LocalDateTime createAt;

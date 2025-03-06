@@ -69,7 +69,7 @@ public class ShopServiceTest {
                 .category(CHICKEN)
                 .openAt(LocalTime.of(9, 30))
                 .closeAt(LocalTime.of(21, 30))
-                .minPrice(19000.0)
+                .minPrice(19000)
                 .build();
 
         // LocalDateTime 는 날짜 정보까지 나타내지만 LocalTime 는 시간만 나타냄
@@ -92,7 +92,7 @@ public class ShopServiceTest {
         assertEquals("CHICKEN", add.getCategory().toString()); // 이 부분 질문 여기는 .toString() 없어도 잘되는데 getRole 부분은 .toString() 없으면 안됨 + 여긴 .toString() 넣으면 주의 밑줄 쳐짐
         assertEquals(LocalTime.of(9, 30), add.getOpenAt());
         assertEquals(LocalTime.of(21, 30), add.getCloseAt());
-        assertEquals(19000.0, add.getMinPrice());
+        assertEquals(19000, add.getMinPrice());
     }
 
 
@@ -213,7 +213,7 @@ public class ShopServiceTest {
                 .category(CHICKEN)
                 .openAt(LocalTime.of(9, 30))
                 .closeAt(LocalTime.of(21, 30))
-                .minPrice(19000.0)
+                .minPrice(19000)
                 .build();
 
         // LocalDateTime 는 날짜 정보까지 나타내지만 LocalTime 는 시간만 나타냄
@@ -239,7 +239,7 @@ public class ShopServiceTest {
         assertEquals("CHICKEN", update.getCategory().toString());
         assertEquals(LocalTime.of(9, 30), update.getOpenAt());
         assertEquals(LocalTime.of(21, 30), update.getCloseAt());
-        assertEquals(19000.0, update.getMinPrice());
+        assertEquals(19000, update.getMinPrice());
     }
 
 

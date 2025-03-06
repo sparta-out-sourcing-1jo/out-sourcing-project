@@ -85,7 +85,7 @@ public class OrderService {
 
         ifTrueThenThrow (
                 !order.getUser().getId().equals(authUser.getId())
-                || !order.getShop().getId().equals(authUser.getId()),
+                && !order.getShop().getId().equals(authUser.getId()),
                 USER_ACCESS_DENIED
         );
 
@@ -111,31 +111,27 @@ public class OrderService {
                 () -> new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
 
         List<Order> orders = Collections.emptyList();
-        if (UserRole.USER.equals(authUser.getUserRole()) && orderState == null){
-            orders = orderRepository.findOrdersByUser(user);
+        if (UserRole.USER.equals(authUser.getUserRole())) {
+            // 고객: 자신의 주문만 조회 (주문 상태 필터 적용)
+            orders = (orderState != null)
+                    ? orderRepository.findOrdersByUserAndState(user, orderState)
+                    : orderRepository.findOrdersByUser(user);
+        } else { // Owner인 경우
+            if (shopId != null) {
+                // 특정 가게가 지정된 경우
+                Shop shop = shopRepository.findShopById(shopId)
+                        .orElseThrow(() -> new ResponseStatusException(SHOP_NOT_FOUND.getStatus(), SHOP_NOT_FOUND.getMessage()));
+                orders = (orderState != null)
+                        ? orderRepository.findOrdersByShopAndState(shop, orderState)
+                        : orderRepository.findOrdersByShop(shop);
+            } else {
+                // 가게가 지정되지 않은 경우, 해당 Owner 가 소유한 모든 가게의 주문 조회
+                List<Shop> shops = shopRepository.findShopsByUserAndDeletedAtIsNull(user);
+                orders = (orderState != null)
+                        ? orderRepository.findOrdersByStateAndShopIn(orderState, shops)
+                        : orderRepository.findOrdersByShopIn(shops);
+            }
         }
-        if (UserRole.USER.equals(authUser.getUserRole()) && orderState != null){
-            orders = orderRepository.findOrdersByUserAndState(user,orderState);
-        }
-        if (UserRole.OWNER.equals(authUser.getUserRole()) && orderState == null && shopId == null) {
-            List<Shop> shops = shopRepository.findShopsByUserAndDeletedAtIsNull(user);
-            orders = orderRepository.findOrdersByShopIn(shops);
-        }
-        if (UserRole.OWNER.equals(authUser.getUserRole()) && orderState != null && shopId == null) {
-            List<Shop> shops = shopRepository.findShopsByUserAndDeletedAtIsNull(user);
-            orders = orderRepository.findOrdersByShopIn(shops);
-        }
-        if (UserRole.OWNER.equals(authUser.getUserRole()) && orderState == null && shopId != null) {
-            Shop shop = shopRepository.findShopById(shopId).orElseThrow(
-                    () -> new ResponseStatusException(SHOP_NOT_FOUND.getStatus(), SHOP_NOT_FOUND.getMessage()));
-            orders = orderRepository.findOrdersByShop(shop);
-        }
-        if (UserRole.OWNER.equals(authUser.getUserRole()) && orderState != null && shopId != null) {
-            Shop shop = shopRepository.findShopById(shopId).orElseThrow(
-                    () -> new ResponseStatusException(SHOP_NOT_FOUND.getStatus(), SHOP_NOT_FOUND.getMessage()));
-            orders = orderRepository.findOrdersByShop(shop);
-        }
-
         return OrderResponseDto.toPageOrderDto(orders, pageable);
     }
 

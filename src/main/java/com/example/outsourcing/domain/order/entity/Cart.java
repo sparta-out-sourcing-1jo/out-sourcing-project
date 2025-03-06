@@ -28,7 +28,7 @@ public class Cart extends BaseTimeEntity {
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
-    @OneToMany(mappedBy = "cart_id")
+    @OneToMany(mappedBy = "cart")
     private List<CartItem> cartItems;
 
     private Integer totalPrice;

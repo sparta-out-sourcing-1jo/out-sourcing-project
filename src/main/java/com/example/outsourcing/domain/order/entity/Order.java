@@ -37,7 +37,7 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
-    @OneToMany(mappedBy = "cart_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> orderMenus;
 
     private Integer totalPrice;
