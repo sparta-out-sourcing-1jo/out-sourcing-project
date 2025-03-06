@@ -42,4 +42,8 @@ public class User extends BaseTimeEntity {
     public void changePassword(String password){
         this.password = password;
     }
+
+    public void changeUserRole(UserRole role){
+        this.role = role;
+    }
 }

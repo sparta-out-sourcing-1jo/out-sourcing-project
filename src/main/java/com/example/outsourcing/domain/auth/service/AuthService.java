@@ -41,16 +41,20 @@ public class AuthService {
                 signupRequest.getAddress(),
                 userRole
         );
-        User savedUser = userRepository.save(newUser);
+        userRepository.save(newUser);
 
-        String bearerToken = jwtUtil.createToken(savedUser.getId(), savedUser.getEmail(), userRole);
-
-        return new SignupResponse(bearerToken);
+        return new SignupResponse(
+                newUser.getId(),
+                newUser.getEmail(),
+                newUser.getUsername(),
+                newUser.getAddress(),
+                newUser.getRole()
+        );
     }
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findUserByEmail(loginRequest.getEmail()).orElseThrow(
+        User user = userRepository.findUserByEmailAndDeletedAtIsNull(loginRequest.getEmail()).orElseThrow(
                 ()->new ResponseStatusException(USER_NOT_FOUND.getStatus(), USER_NOT_FOUND.getMessage()));
 
         if(!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {

@@ -20,6 +20,8 @@ public enum ErrorCode {
     PASSWORD_SAME_AS_OLD("이전 패스워드와 동일할 수 없습니다.", BAD_REQUEST),
     USER_ACCESS_DENIED("사용자가 접근할 수 있는 권한이 없습니다.", FORBIDDEN),
     INVALID_AUTH_COMBINATION("@Auth와 AuthUser 타입은 함께 사용되어야 합니다.", UNAUTHORIZED),
+    USER_ROLE_SAME_AS_OLD("이전 역활과 동일할 수 없습니다.", BAD_REQUEST),
+    INVALID_USER_ROLE("유효하지 않는 role 입니다.", BAD_REQUEST),
 
     // 토큰 관련 예외 코드
     TOKEN_NOT_FOUND("해당 토큰을 찾을 수 없습니다.", NOT_FOUND),

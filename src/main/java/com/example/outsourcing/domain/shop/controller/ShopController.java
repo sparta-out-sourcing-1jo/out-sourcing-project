@@ -35,11 +35,11 @@ public class ShopController {
 
 
     // 가게 단건 조회 (상점 정보 + 메뉴 리스트)
-    @GetMapping("/{shopId}")
-    public ResponseEntity<ShopMenuResponseDto> getShop(@PathVariable Long shopId) {
-
-        return ResponseEntity.ok(shopService.getShop(shopId));
-    }
+//    @GetMapping("/{shopId}")
+//    public ResponseEntity<ShopMenuResponseDto> getShop(@PathVariable Long shopId) {
+//
+//        return ResponseEntity.ok(shopService.getShop(shopId));
+//    }
 
     // 가게 다건 조회 (페이징)
     @GetMapping
