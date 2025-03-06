@@ -9,6 +9,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -31,9 +32,8 @@ public class OrderAccessLoggingAspect {
         // 쿼리 파라미터에서 shopId 가져오기
         String shopId = Optional.ofNullable(request.getParameter("shopId")).orElse("N/A");
 
-        // PathVariable 로 전달된 orderId 찾기; parameter 이름이 없으면 URI에서 추출
-        String orderId = extractPathVariable(joinPoint, "orderId")
-                .orElseGet(() -> extractOrderIdFromUri(request.getRequestURI()));
+        // PathVariable 로 전달된 orderId 찾기
+        String orderId = extractPathVariable(joinPoint, "orderId").orElse("N/A");
 
         // 요청 시각 기록
         String requestTime = LocalDateTime.now().toString();
@@ -45,22 +45,15 @@ public class OrderAccessLoggingAspect {
         return joinPoint.proceed();
     }
 
-    // 기존 방법: 메서드 파라미터 이름으로 추출 (컴파일 옵션에 따라 실패할 수 있음)
+    // @Pathvariable 을 추출하기 위한 매서드
     private Optional<String> extractPathVariable(ProceedingJoinPoint joinPoint, String variableName) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String[] paramNames = signature.getParameterNames();
         Object[] args = joinPoint.getArgs();
+        String[] paramNames = signature.getParameterNames();
 
         return IntStream.range(0, paramNames.length)
-                .filter(i -> variableName.equals(paramNames[i]))
+                .filter(i -> paramNames[i].equals(variableName))
                 .mapToObj(i -> args[i].toString())
                 .findFirst();
-    }
-
-    // URI에서 마지막 segment를 orderId로 간주하여 추출
-    private String extractOrderIdFromUri(String uri) {
-        if (uri == null || uri.isEmpty()) return "N/A";
-        String[] segments = uri.split("/");
-        return segments.length > 0 ? segments[segments.length - 1] : "N/A";
     }
 }
