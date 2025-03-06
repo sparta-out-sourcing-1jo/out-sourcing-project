@@ -1,11 +1,9 @@
 package com.example.outsourcing.domain.menu.controller;
 
-import com.example.outsourcing.domain.auth.annotation.Auth;
-import com.example.outsourcing.domain.auth.dto.AuthUser;
-import com.example.outsourcing.domain.menu.dto.Response.MenuResponseDto;
-import com.example.outsourcing.domain.menu.dto.Request.MenuSaveRequestDto;
-import com.example.outsourcing.domain.menu.dto.Response.MenuSaveResponseDto;
-import com.example.outsourcing.domain.menu.dto.Request.MenuUpdateRequestDto;
+import com.example.outsourcing.domain.menu.dto.MenuResponseDto;
+import com.example.outsourcing.domain.menu.dto.MenuSaveRequestDto;
+import com.example.outsourcing.domain.menu.dto.MenuSaveResponseDto;
+import com.example.outsourcing.domain.menu.dto.MenuUpdateRequestDto;
 import com.example.outsourcing.domain.menu.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,28 +17,26 @@ public class MenuController {
 
     private final MenuService menuService;
 
-    // 메뉴 생성
+    //메뉴 생성
     @PostMapping("/menus")
-    public ResponseEntity<MenuSaveResponseDto> saveMenu(@RequestBody MenuSaveRequestDto menuSaveRequestDto, @Auth AuthUser authUser, @RequestParam Long shopId) {
-        return ResponseEntity.ok(menuService.saveMenu(menuSaveRequestDto, authUser.getId(), shopId));
+    public ResponseEntity<MenuSaveResponseDto> saveMenu(@RequestBody MenuSaveRequestDto menuSaveRequestDto, @RequestParam Long userId) {
+        return ResponseEntity.ok(menuService.saveMenu(menuSaveRequestDto, userId));
     }
 
-    // 식당 조회시 메뉴 전체 조회
-    @GetMapping("/menus")
-    public ResponseEntity<List<MenuResponseDto>> getAllMenus(@RequestParam Long shopId) {
-        List<MenuResponseDto> menus = menuService.findAllMenusByShopId(shopId);
-        return ResponseEntity.ok(menus);
+    //식당 조회시 메뉴 전체 조회
+    @GetMapping("/menus?shopId={shopId}")
+    public ResponseEntity<List<MenuResponseDto>> getAllMenus(@PathVariable Long shopId) {
+        return ResponseEntity.ok(menuService.findAllMenus());
     }
 
-    // 메뉴 수정
+    //메뉴 수정
     @PutMapping("/menus/{menuId}")
-    public void updateMenu(@PathVariable Long menuId, @RequestBody MenuUpdateRequestDto menuUpdateRequestDto, @Auth AuthUser authUser) {
-        menuService.updateMenu(menuId, menuUpdateRequestDto, authUser.getId());
+    public void updateMenu(@PathVariable Long menuId, @RequestBody MenuUpdateRequestDto menuUpdateRequestDto, @RequestParam Long userId) {
+        menuService.updateMenu(menuId, menuUpdateRequestDto, userId);
     }
 
-    // 메뉴 삭제
     @DeleteMapping("/menus/{menuId}")
-    public void deleteMenu(@PathVariable Long menuId, @Auth AuthUser authUser) {
-        menuService.deleteMenuById(menuId, authUser.getId());
+    public void deleteMenu(@PathVariable Long menuId, @RequestParam Long userId) {
+        menuService.deleteMenuById(menuId, userId);
     }
 }

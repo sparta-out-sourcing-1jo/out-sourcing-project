@@ -41,11 +41,15 @@ public class AuthService {
                 signupRequest.getAddress(),
                 userRole
         );
-        User savedUser = userRepository.save(newUser);
+        userRepository.save(newUser);
 
-        String bearerToken = jwtUtil.createToken(savedUser.getId(), savedUser.getEmail(), userRole);
-
-        return new SignupResponse(bearerToken);
+        return new SignupResponse(
+                newUser.getId(),
+                newUser.getEmail(),
+                newUser.getUsername(),
+                newUser.getAddress(),
+                newUser.getRole()
+        );
     }
 
     @Transactional(readOnly = true)

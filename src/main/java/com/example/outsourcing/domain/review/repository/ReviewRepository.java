@@ -21,7 +21,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("select r from Review r where r.id = :reviewId and r.deletedAt is null")
     Optional<Review> findReviewById(@Param("reviewId") Long reviewId);
 
-    @Query("select coalesce(sum(r.rating), 0) from Review r where r.shop.id = :shopId and r.deletedAt is null")
+    @Query(value = "select coalesce(sum(r.rating), 0) from Review r where r.shop.id = :shopId and r.deletedAt is null", nativeQuery = true)
     Integer findSumRatingByShopId(@Param("shopId") Long shopId);
 
     Integer countByShop_IdAndDeletedAtIsNull(Long shopId);
