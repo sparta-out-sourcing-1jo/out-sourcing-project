@@ -1,10 +1,10 @@
 package com.example.outsourcing.domain.shop.dto.response;
 
-
 import com.example.outsourcing.common.enums.ShopCategory;
 import com.example.outsourcing.domain.shop.entity.Shop;
-import com.example.outsourcing.domain.shop.service.ShopService;
+import lombok.Getter;
 
+@Getter
 public class PageShopResponseDto {
     private String name;
     private String address;
@@ -12,13 +12,11 @@ public class PageShopResponseDto {
     private Double averageRating;
     private Integer minPrice;
 
-    ShopService shopService;
-
-    public PageShopResponseDto(Shop shop) {
+    public PageShopResponseDto(Shop shop, Double averageRating) {
         this.name = shop.getName();
         this.address = shop.getAddress();
         this.category = shop.getCategory();
-        this.averageRating = shopService.getAverageRating(shop.getId());
+        this.averageRating = averageRating;
         this.minPrice = shop.getMinPrice();
     }
 }

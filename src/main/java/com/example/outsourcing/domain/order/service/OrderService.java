@@ -9,7 +9,9 @@ import com.example.outsourcing.domain.menu.repository.MenuRepository;
 import com.example.outsourcing.domain.order.dto.request.UpdateOrderRequestDto;
 import com.example.outsourcing.domain.order.dto.response.OrderResponseDto;
 import com.example.outsourcing.domain.order.entity.Cart;
+import com.example.outsourcing.domain.order.entity.CartItem;
 import com.example.outsourcing.domain.order.entity.Order;
+import com.example.outsourcing.domain.order.repository.CartItemRepository;
 import com.example.outsourcing.domain.order.repository.CartRepository;
 import com.example.outsourcing.domain.order.repository.OrderRepository;
 import com.example.outsourcing.domain.shop.entity.Shop;
@@ -63,11 +65,23 @@ public class OrderService {
                 INVALID_PRICE
         );
 
+        // 새로운 Order 생성
         Order newOrder = new Order(OrderState.CLIENT_ACCEPT, user, cart);
-        Order order = orderRepository.save(newOrder);
+        newOrder.setTotalPrice(cart.getTotalPrice()); // totalPrice 설정
 
-        cart.getCartItems().forEach(cartItem -> cartItem.updateOrder(order));
+        // CartItem 복사 및 Order에 연결
+        List<CartItem> orderMenus = new ArrayList<>();
+
+        for (CartItem cartItem : cart.getCartItems()) {
+            CartItem newOrderItem = new CartItem(cartItem.getMenu(), cartItem.getQuantity()); // 새로운 CartItem 생성 (복사본)
+            newOrderItem.updateOrder(newOrder); // Order 연결
+            orderMenus.add(newOrderItem);
+        }
+
+        newOrder.setOrderMenus(orderMenus); // Order에 새로운 CartItem 목록 설정
+        Order order = orderRepository.save(newOrder); // Order 저장 (CascadeType.ALL 로 인해 CartItem들도 함께 저장됨)
         cart.setDeletedAt();
+        cartRepository.save(cart); // Cart soft delete (deletedAt 업데이트)
 
         return new OrderResponseDto(order, pageable);
     }

@@ -56,7 +56,6 @@ public class ShopController {
             // 비로그인 시
             return ResponseEntity.ok(shopService.getShops(category, name, page, size));
         }
-
     }
 
     // 가게 단건 수정

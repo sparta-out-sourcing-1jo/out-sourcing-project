@@ -37,7 +37,7 @@ public class Shop extends BaseTimeEntity {
 
     private LocalTime openAt;
     private LocalTime closeAt;
-    private Double averageRating;
+    private Double averageRating = 0.0;
     private Integer reviewCount;
     private Integer minPrice;
 

@@ -52,6 +52,7 @@ public class CartItem extends BaseTimeEntity{
     }
 
     public void updateOrder(Order order){
+        this.cart = null;
         this.order = order;
     }
 

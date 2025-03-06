@@ -162,6 +162,7 @@ public class CartService {
                             CartItem newCartItem = new CartItem(menu, quantity);
                             cart.getCartItems().add(newCartItem);
                             cart.updateTotalPrice(cart.getCartItems());
+                            cartItemRepository.save(newCartItem);
                         }
                 );
     }

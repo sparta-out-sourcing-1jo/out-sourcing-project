@@ -156,7 +156,7 @@ public class ShopService {
 
         Page<Shop> shops = shopRepository.findAll(specification, pageable);
 
-        return shops.map(PageShopResponseDto::new);
+        return shops.map(shop -> new PageShopResponseDto(shop, getAverageRating(shop.getId())));
     }
 
     // 가게 다건 조회 (로그인)
@@ -181,7 +181,7 @@ public class ShopService {
 
         Page<Shop> shops = shopRepository.findAll(specification, pageable);
 
-        return shops.map(PageShopResponseDto::new);
+        return shops.map(shop -> new PageShopResponseDto(shop, getAverageRating(shop.getId())));
     }
 
     // 가게 정보 수정
@@ -359,7 +359,7 @@ public class ShopService {
         // 특정 유저의 북마크 페이징 조회
         Page<ShopBookmark> bookmarks = shopBookmarkRepository.findByUserId(user.getId(), pageable);
 
-        return bookmarks.map(bookmark -> new PageShopResponseDto(bookmark.getShop()));
+        return bookmarks.map(bookmark -> new PageShopResponseDto(bookmark.getShop(), getAverageRating(bookmark.getShop().getId())));
     }
 
 }

@@ -8,7 +8,9 @@ import com.example.outsourcing.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -37,9 +39,11 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
+    @Setter
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> orderMenus;
+    private List<CartItem> orderMenus = new ArrayList<>();
 
+    @Setter
     private Integer totalPrice;
 
 
@@ -47,7 +51,6 @@ public class Order extends BaseTimeEntity {
         this.state = state;
         this.user = user;
         this.shop = cart.getShop();
-        this.orderMenus = cart.getCartItems();
         this.totalPrice = cart.getTotalPrice();
     }
 
