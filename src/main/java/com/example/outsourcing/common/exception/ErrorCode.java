@@ -34,6 +34,8 @@ public enum ErrorCode {
     OWNER_CAN_CREATE("사장님만 가게를 생성할 수 있습니다", CONFLICT),
     OWNER_CAN_UPDATE("사장님만 가게를 수정할 수 있습니다", CONFLICT),
     MAX_SHOP_COUNT("가게는 최대 3개까지 생성 가능합니다", BAD_REQUEST),
+    ALREADY_EXIST_BOOKMARK("이미 해당 가게를 즐겨찾기 중입니다.", CONFLICT),
+    NOT_EXIST_BOOKMARK("해당 가게 즐겨찾기 중이 아닙니다.", NOT_FOUND),
 
     // 주문 관련 예외 코드
     ORDER_NOT_FINISH("주문이 완료되지 않았습니다", CONFLICT),
