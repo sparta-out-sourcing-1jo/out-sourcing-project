@@ -110,7 +110,7 @@ public class ShopServiceTest {
                 .category(CHICKEN)
                 .openAt(LocalTime.of(9, 30))
                 .closeAt(LocalTime.of(21, 30))
-                .minPrice(19000.0)
+                .minPrice(19000)
                 .build();
 
         // 수정 요청 DTO
@@ -147,7 +147,7 @@ public class ShopServiceTest {
         assertEquals("CHICKEN", add.getCategory().toString());
         assertEquals(LocalTime.of(9, 30), add.getOpenAt());
         assertEquals(LocalTime.of(21, 30), add.getCloseAt());
-        assertEquals(19000.0, add.getMinPrice());
+        assertEquals(19000, add.getMinPrice());
     }
 
 

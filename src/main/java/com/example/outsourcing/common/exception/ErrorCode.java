@@ -43,6 +43,9 @@ public enum ErrorCode {
     INVALID_PRICE("최소 주문 가격을 넘겨주세요.", BAD_REQUEST),
     OVER_TIME_TO_OPEN("가게오픈시간이 아닙니다.", BAD_REQUEST),
     ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다.", NOT_FOUND),
+    CART_ALREADY_EXIST("장바구니가 이미 존재합니다.", BAD_REQUEST),
+    DUPLICATION_TO_SHOP("같은 가게에서만 주문 할 수 있습니다.", BAD_REQUEST),
+    CART_NOT_FOUND("장바구니가 비어있습니다.", BAD_REQUEST),
     
     // 리뷰 관련 예외 코드
     FILE_UPLOAD_FAILED("이미지 파일 업로드에 실패했습니다.", PRECONDITION_FAILED),

@@ -138,6 +138,7 @@ public class ShopService {
 //                .build();
 //    }
 
+
     // 가게 다건 조회 (비로그인)
     @Transactional(readOnly = true)
     public Page<PageShopResponseDto> getShops(ShopCategory category, String name, int page, int size) {
