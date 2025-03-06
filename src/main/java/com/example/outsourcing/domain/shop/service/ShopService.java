@@ -11,6 +11,8 @@ import com.example.outsourcing.domain.shop.dto.response.ShopMenuResponseDto;
 import com.example.outsourcing.domain.shop.dto.response.ShopResponseDto;
 import com.example.outsourcing.domain.shop.dto.response.StateShopResponseDto;
 import com.example.outsourcing.domain.shop.entity.Shop;
+import com.example.outsourcing.domain.shop.entity.ShopBookmark;
+import com.example.outsourcing.domain.shop.repository.ShopBookmarkRepository;
 import com.example.outsourcing.domain.shop.repository.ShopRepository;
 import com.example.outsourcing.domain.user.entity.User;
 import com.example.outsourcing.domain.user.repository.UserRepository;
@@ -27,7 +29,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.example.outsourcing.common.enums.UserRole.OWNER;
 import static com.example.outsourcing.common.exception.ErrorCode.*;
@@ -40,6 +41,7 @@ public class ShopService {
     private final UserRepository userRepository;
     private final MenuRepository menuRepository;
     private final ReviewRepository reviewRepository;
+    private final ShopBookmarkRepository shopBookmarkRepository;
 
     // 가게 생성
     @Transactional
@@ -276,17 +278,18 @@ public class ShopService {
                 );
     }
 
+
     // 스케줄링 메서드
     // 크론 안쓰고 이렇게도 가능: (fixedRate = 1000 * 60 * 1): 1분마다 실행 (밀리초 * 초 * 분)
     // 크론 표현식: 초 분 시 일 월 요일 => 0 * * * * *: 매요일 매월 매일 매시 매분 0초마다 반복
     @Scheduled(cron = "0 * * * * *")
-    public void scheduledShopState(){
+    public void scheduledShopState() {
         List<Shop> shops = shopRepository.findAll();
         LocalTime nowTime = LocalTime.now().truncatedTo(ChronoUnit.MINUTES); // 초 무시하고 분 단위로 기록
 
         // 설정 시간과 현재 시간이 정확히 일치하는 순간에 작동
         for (Shop shop : shops) {
-            if (nowTime.equals(shop.getOpenAt()) && shop.getState() != ShopState.OPEN ) {
+            if (nowTime.equals(shop.getOpenAt()) && shop.getState() != ShopState.OPEN) {
                 shop.updateState(ShopState.OPEN);
             }
             if (nowTime.equals(shop.getCloseAt()) && shop.getState() != ShopState.CLOSE) {
@@ -294,4 +297,66 @@ public class ShopService {
             }
         }
     }
+
+    // 가게 즐겨찾기
+    @Transactional
+    public void addBookmark(Long shopId, Long userId) {
+        // 유저 검증
+        User user = findUser(userId);
+
+        // 가게 검증
+        Shop shop = findShop(shopId);
+
+        // 즐겨찾기 중복 검증
+        if (shopBookmarkRepository.findByShopIdAndUserId(shopId, userId).isPresent()) {
+            throw new ResponseStatusException(
+                    ALREADY_EXIST_BOOKMARK.getStatus(),
+                    ALREADY_EXIST_BOOKMARK.getMessage()
+            );
+        }
+
+        // 엔티티 생성
+        ShopBookmark shopBookmark = ShopBookmark.builder()
+                .user(user)
+                .shop(shop)
+                .build();
+
+        shopBookmarkRepository.save(shopBookmark);
+    }
+
+    // 즐겨찾기 삭제 (하드 딜리트)
+    @Transactional
+    public void deleteBookmark(Long shopId, Long userId) {
+
+        // 유저 검증
+        User user = findUser(userId);
+
+        // 가게 검증
+        Shop shop = findShop(shopId);
+
+        // 즐겨찾기 중복 검증
+        ShopBookmark bookmark = shopBookmarkRepository.findByShopIdAndUserId(shopId, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                                NOT_EXIST_BOOKMARK.getStatus(),
+                                NOT_EXIST_BOOKMARK.getMessage()
+                        )
+                );
+
+        shopBookmarkRepository.delete(bookmark);
+
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PageShopResponseDto> getShopBookmarks(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 유저 검증
+        User user = findUser(userId);
+
+        // 특정 유저의 북마크 페이징 조회
+        Page<ShopBookmark> bookmarks = shopBookmarkRepository.findByUserId(user.getId(), pageable);
+
+        return bookmarks.map(bookmark -> new PageShopResponseDto(bookmark.getShop()));
+    }
+
 }

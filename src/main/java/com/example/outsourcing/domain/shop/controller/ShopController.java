@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class ShopController {
 
     private final ShopService shopService;
-    private final MemberService memberService
+//    private final MemberService memberService;
 
 
     // 가게 생성
@@ -61,7 +61,7 @@ public class ShopController {
 
     }
 
-// 가게 단건 수정
+    // 가게 단건 수정
     @PatchMapping("/{shopId}")
     public ResponseEntity<ShopResponseDto> updateShop(
             @PathVariable Long shopId,
@@ -71,7 +71,7 @@ public class ShopController {
         return ResponseEntity.ok(shopService.updateShop(shopId, requestDto, authUser.getId()));
     }
 
-// 가게 영업상태 강제 변경
+    // 가게 영업상태 강제 변경
     @PatchMapping("/{shopId}/state")
     public ResponseEntity<StateShopResponseDto> updateStateShop(
             @PathVariable Long shopId,
@@ -81,7 +81,7 @@ public class ShopController {
         return ResponseEntity.ok(shopService.updateStateShop(shopId, requestDto, authUser.getId()));
     }
 
-// 가게 폐업
+    // 가게 폐업
     @DeleteMapping("/{shopId}")
     public ResponseEntity<Void> deleteShop(
             @PathVariable Long shopId,
@@ -89,9 +89,39 @@ public class ShopController {
     ) {
         shopService.deleteShop(shopId, authUser.getId());
 
-        // 레스트풀 상, ResponseEntity.noContent().build() 으로 204 No Content 반환하는 것이 일반적이지만, 팀 컨벤션상 200 ok 반환.
         return ResponseEntity.ok().build();
     }
 
+    // 가게 즐겨찾기
+    @PostMapping("/{shopId}/bookmark")
+    public ResponseEntity<Void> addBookmark(
+            @PathVariable Long shopId,
+            @Auth AuthUser authUser
+    ) {
+        shopService.addBookmark(shopId, authUser.getId());
+
+        return ResponseEntity.ok().build();
+    }
+
+    // 가게 즐겨찾기 취소
+    @PostMapping("/{shopId}/unBookmark")
+    public ResponseEntity<Void> deleteBookmark(
+            @PathVariable Long shopId,
+            @Auth AuthUser authUser
+    ) {
+        shopService.deleteBookmark(shopId, authUser.getId());
+
+        return ResponseEntity.ok().build();
+    }
+    
+    // 즐겨찾기 가게 다건 조회
+    @GetMapping("/bookmarks")
+    public ResponseEntity<Page<PageShopResponseDto>> getShopBookmarks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @Auth AuthUser authUser
+    ) {
+            return ResponseEntity.ok(shopService.getShopBookmarks(authUser.getId(), page, size));
+    }
 
 }
