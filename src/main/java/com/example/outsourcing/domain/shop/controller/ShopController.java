@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.*;
 public class ShopController {
 
     private final ShopService shopService;
-//    private final MemberService memberService
+//    private final MemberService memberService;
 
-    // TODO: jwt 인증 추가
+
     // 가게 생성
-    @PostMapping("/posts/{postId}/{userId}")
+    @PostMapping
     public ResponseEntity<ShopResponseDto> addShop(
             @RequestBody ShopRequestDto requestDto,
             @Auth AuthUser authUser
@@ -33,8 +33,6 @@ public class ShopController {
         return ResponseEntity.ok(shopService.addShop(requestDto, authUser.getId()));
     }
 
-
-    // TODO: 메뉴 리스트 받아서 넣기
 
     // 가게 단건 조회 (상점 정보 + 메뉴 리스트)
 //    @GetMapping("/{shopId}")
@@ -44,7 +42,7 @@ public class ShopController {
 //    }
 
     // 가게 다건 조회 (페이징)
-    @GetMapping("/{userId}")
+    @GetMapping
     public ResponseEntity<Page<PageShopResponseDto>> getShops(
             @RequestParam(required = false) ShopCategory category,
             @RequestParam(required = false) String name,
@@ -63,22 +61,8 @@ public class ShopController {
 
     }
 
-// TODO: 제네릭 페이징 만들기 (보류 중)
-// 다건 조회 (페이징)
-// 공통 클래스
-//    @GetMapping
-//    public <T> ResponseEntity<Page<T>> getAllController(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size) {
-//        return ResponseEntity.ok(getAllService(page, size));
-//    }
-//
-//    public <T> Page<T> getAllService(int page, int size){
-//    }
-
-    // TODO: jwt 인증 추가
-// 가게 단건 수정
-    @PatchMapping("/{shopId}/{userId}")
+    // 가게 단건 수정
+    @PatchMapping("/{shopId}")
     public ResponseEntity<ShopResponseDto> updateShop(
             @PathVariable Long shopId,
             @RequestBody ShopRequestDto requestDto,
@@ -87,9 +71,8 @@ public class ShopController {
         return ResponseEntity.ok(shopService.updateShop(shopId, requestDto, authUser.getId()));
     }
 
-    // TODO: 기본 변경은 스케줄, jwt 인증 추가
-// 가게 영업상태 강제 변경
-    @PatchMapping("/{shopId}/state/{userId}")
+    // 가게 영업상태 강제 변경
+    @PatchMapping("/{shopId}/state")
     public ResponseEntity<StateShopResponseDto> updateStateShop(
             @PathVariable Long shopId,
             @RequestBody StateShopRequestDto requestDto,
@@ -98,18 +81,47 @@ public class ShopController {
         return ResponseEntity.ok(shopService.updateStateShop(shopId, requestDto, authUser.getId()));
     }
 
-    // TODO: jwt 인증 추가
-// 가게 폐업
-    @DeleteMapping("/{shopId}/{userId}")
+    // 가게 폐업
+    @DeleteMapping("/{shopId}")
     public ResponseEntity<Void> deleteShop(
             @PathVariable Long shopId,
             @Auth AuthUser authUser
     ) {
         shopService.deleteShop(shopId, authUser.getId());
 
-        // 레스트풀 상, ResponseEntity.noContent().build() 으로 204 No Content 반환하는 것이 일반적이지만, 팀 컨벤션상 200 ok 반환.
         return ResponseEntity.ok().build();
     }
 
+    // 가게 즐겨찾기
+    @PostMapping("/{shopId}/bookmark")
+    public ResponseEntity<Void> addBookmark(
+            @PathVariable Long shopId,
+            @Auth AuthUser authUser
+    ) {
+        shopService.addBookmark(shopId, authUser.getId());
+
+        return ResponseEntity.ok().build();
+    }
+
+    // 가게 즐겨찾기 취소
+    @PostMapping("/{shopId}/unBookmark")
+    public ResponseEntity<Void> deleteBookmark(
+            @PathVariable Long shopId,
+            @Auth AuthUser authUser
+    ) {
+        shopService.deleteBookmark(shopId, authUser.getId());
+
+        return ResponseEntity.ok().build();
+    }
+    
+    // 즐겨찾기 가게 다건 조회
+    @GetMapping("/bookmarks")
+    public ResponseEntity<Page<PageShopResponseDto>> getShopBookmarks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @Auth AuthUser authUser
+    ) {
+            return ResponseEntity.ok(shopService.getShopBookmarks(authUser.getId(), page, size));
+    }
 
 }
