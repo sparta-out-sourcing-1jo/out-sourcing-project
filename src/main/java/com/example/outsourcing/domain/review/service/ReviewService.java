@@ -70,8 +70,8 @@ public class ReviewService {
                 .content(dto.getContent())
                 .rating(dto.getRating())
                 .imageUrl(imageUrl)
-                .user(findOrder.getOrderMenus().getUser())
-                .shop(findOrder.getOrderMenus().getShop())
+                .user(findOrder.getUser())
+                .shop(findOrder.getShop())
                 .order(findOrder)
                 .build();
 

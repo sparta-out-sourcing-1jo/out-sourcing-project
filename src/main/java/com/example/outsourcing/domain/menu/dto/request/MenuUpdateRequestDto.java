@@ -1,4 +1,4 @@
-package com.example.outsourcing.domain.menu.dto;
+package com.example.outsourcing.domain.menu.dto.request;
 
 import lombok.Getter;
 
@@ -6,5 +6,5 @@ import lombok.Getter;
 public class MenuUpdateRequestDto {
 
     private String name;
-    private Double price;
+    private Integer price;
 }

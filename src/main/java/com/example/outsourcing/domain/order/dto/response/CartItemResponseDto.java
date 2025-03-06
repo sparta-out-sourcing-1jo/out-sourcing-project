@@ -33,7 +33,10 @@ public class CartItemResponseDto {
 
     public static CartItemResponseDto toDtoCartItem(CartItem cartItem){ return new CartItemResponseDto(cartItem); }
 
-    public static PageResponseDto<CartItemResponseDto> toPageCartItemDto(List<CartItem> cartItems, Pageable pageable){
+    public static PageResponseDto<CartItemResponseDto> toPageCartItemDto(
+            List<CartItem> cartItems,
+            Pageable pageable
+    ){
         return new PageResponseDto<>(new PageImpl<>(
                 cartItems.stream()
                         .map(CartItemResponseDto::toDtoCartItem)

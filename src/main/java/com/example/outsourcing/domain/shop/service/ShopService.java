@@ -2,6 +2,8 @@ package com.example.outsourcing.domain.shop.service;
 
 import com.example.outsourcing.common.enums.ShopState;
 import com.example.outsourcing.common.enums.ShopCategory;
+import com.example.outsourcing.domain.menu.dto.response.MenuResponseDto;
+import com.example.outsourcing.domain.menu.entity.Menu;
 import com.example.outsourcing.domain.menu.repository.MenuRepository;
 import com.example.outsourcing.domain.review.repository.ReviewRepository;
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
@@ -29,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.outsourcing.common.enums.UserRole.OWNER;
 import static com.example.outsourcing.common.exception.ErrorCode.*;
@@ -120,24 +123,23 @@ public class ShopService {
     }
 
     // 가게 단건 조회
-//    public ShopMenuResponseDto getShop(Long shopId) {
-//
-//        // 가게 검증
-//        Shop shop = findShop(shopId);
-//
-//        // 메뉴 리스트 생성
-//        List<Menu> menus = menuRepository.findAllByShop_Id(shopId);
-//
-//        // 가게와 메뉴를 DTO 로 변환
-//        ShopResponseDto shopResponseDto = returnShopResponseDto(shop);
-//        List<MenuResponseDto> menusDto = menus.stream().map(MenuResponseDto::new).collect(Collectors.toList());
-//
-//        return ShopMenuResponseDto.builder()
-//                .shopInfo(shopResponseDto)
-//                .menus(menusDto)
-//                .build();
-//    }
+    public ShopMenuResponseDto getShop(Long shopId) {
 
+        // 가게 검증
+        Shop shop = findShop(shopId);
+
+        // 메뉴 리스트 생성
+        List<Menu> menus = menuRepository.findAllByShopId(shopId);
+
+        // 가게와 메뉴를 DTO 로 변환
+        ShopResponseDto shopResponseDto = returnShopResponseDto(shop);
+        List<MenuResponseDto> menusDto = menus.stream().map(MenuResponseDto::of).collect(Collectors.toList());
+
+        return ShopMenuResponseDto.builder()
+                .shopInfo(shopResponseDto)
+                .menus(menusDto)
+                .build();
+    }
 
     // 가게 다건 조회 (비로그인)
     @Transactional(readOnly = true)

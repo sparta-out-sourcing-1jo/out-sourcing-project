@@ -34,7 +34,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
-    private final MenuRepository menuRepository;
     private final CartRepository cartRepository;
 
     /**
