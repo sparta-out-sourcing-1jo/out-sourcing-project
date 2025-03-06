@@ -40,6 +40,7 @@ public enum ErrorCode {
     ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다.", NOT_FOUND),
     
     // 리뷰 관련 예외 코드
+    FILE_UPLOAD_FAILED("이미지 파일 업로드에 실패했습니다.", PRECONDITION_FAILED),
     REVIEW_NOT_FOUND("해당 리뷰를 찾을 수 없습니다", NOT_FOUND),
     REVIEW_ALREADY_EXIST("해당 주문에 대한 리뷰가 이미 존재합니다", BAD_REQUEST);
     

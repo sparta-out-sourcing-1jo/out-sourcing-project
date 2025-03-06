@@ -1,6 +1,7 @@
 package com.example.outsourcing.domain.review.dto.response;
 
 import com.example.outsourcing.domain.review.entity.Review;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,9 @@ public class GetReviewResponseDto {
     private final Integer rating;
     private final String userRole;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final String imageUrl;
+
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -32,6 +36,7 @@ public class GetReviewResponseDto {
                 review.getContent(),
                 review.getRating(),
                 review.getUser().getRole().name(),
+                review.getImageUrl(),
                 review.getCreatedAt(),
                 review.getUpdatedAt()
         );

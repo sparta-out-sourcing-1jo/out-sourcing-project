@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.data.domain.Pageable;
@@ -34,11 +35,13 @@ public class ReviewService {
     private final OrderRepository orderRepository;
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
+    private final S3Uploader s3Uploader;
 
     // 리뷰 생성 서비스 로직
     @Transactional
     public CreateReviewResponseDto createReview(
             CreateReviewRequestDto dto,
+            MultipartFile file,
             Long orderId
     ) {
         // 리뷰 어뷰징 방지 (1주문 당 1리뷰)
@@ -58,9 +61,15 @@ public class ReviewService {
             );
         }
 
+        String imageUrl = null;
+        if(file != null && !file.isEmpty()) {
+            imageUrl = s3Uploader.uploadFile(file);
+        }
+
         Review savedReview = Review.builder()
                 .content(dto.getContent())
                 .rating(dto.getRating())
+                .imageUrl(imageUrl)
                 .user(findOrder.getUser())
                 .shop(findOrder.getShop())
                 .order(findOrder)
@@ -82,13 +91,19 @@ public class ReviewService {
     @Transactional
     public UpdateReviewResponseDto updateReview(
             UpdateReviewRequestDto dto,
+            MultipartFile file,
             Long reviewId,
             Long userId
     ) {
         checkUserPermission(reviewId, userId);
         Review findReview = getReview(reviewId);
 
-        findReview.reviewUpdate(dto.getContent(), dto.getRating());
+        String imageUrl = findReview.getImageUrl();
+        if(file != null && !file.isEmpty()) {
+            imageUrl = s3Uploader.uploadFile(file);
+        }
+
+        findReview.reviewUpdate(dto.getContent(), dto.getRating(), imageUrl);
         return UpdateReviewResponseDto.of(findReview);
     }
     

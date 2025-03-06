@@ -21,6 +21,7 @@ public class Review extends BaseTimeEntity {
 
     private String content;
     private Integer rating;
+    private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -34,8 +35,9 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    public void reviewUpdate(String content, Integer rating) {
+    public void reviewUpdate(String content, Integer rating, String imageUrl) {
         this.content = content;
         this.rating = rating;
+        this.imageUrl = imageUrl;
     }
 }
