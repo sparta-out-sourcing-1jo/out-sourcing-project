@@ -26,6 +26,7 @@ public enum ErrorCode {
 
     // 메뉴 관련 예외 코드
     MENU_NOT_FOUND("해당 메뉴를 찾을 수 없습니다.", NOT_FOUND),
+    MENU_NOT_IN_SHOP("해당 메뉴는 해당 가게에서 속하지 않습니다.", BAD_REQUEST),
 
     // 가게 관련 예외 코드
     SHOP_NOT_FOUND("해당 가게를 찾을 수 없습니다", NOT_FOUND),
