@@ -1,7 +1,11 @@
 package com.example.outsourcing.domain.shop.service;
 
+import com.example.outsourcing.domain.shop.entity.ShopBookmark;
+import com.example.outsourcing.domain.shop.repository.ShopBookmarkRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.example.outsourcing.domain.review.repository.ReviewRepository;
@@ -14,8 +18,6 @@ import com.example.outsourcing.domain.shop.repository.ShopRepository;
 import com.example.outsourcing.domain.user.entity.User;
 import com.example.outsourcing.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -36,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -52,8 +55,15 @@ public class ShopServiceTest {
     @Mock
     private ReviewRepository reviewRepository;
 
+    @Mock
+    private ShopBookmarkRepository shopBookmarkRepository;
+
     @InjectMocks
     private ShopService shopService;
+
+    // 생성된 객체 캡쳐용
+    @Captor
+    private ArgumentCaptor<ShopBookmark> bookmarkCaptor;
 
     // 디버그 로깅용
     Logger logger = LoggerFactory.getLogger(ShopService.class);
@@ -261,7 +271,7 @@ public class ShopServiceTest {
         assertEquals(OPEN, updateState.getState());
     }
 
-    // deleteShop 테스트
+    // deleteShop 테스트 (소프트 딜리트)
     @Test
     void shop_삭제_시_DeletedAt값이_Null이_아니다() {
         // given
@@ -331,6 +341,64 @@ public class ShopServiceTest {
     }
 
 
+    // addBookmark 테스트
+    @Test
+    void addBookmark_성공_시_객체가_생성되고_값이_일치한다(){
+        //given
+        when(userRepository.findById(customerId)).thenReturn(Optional.of(mockCustomer));
+        when(shopRepository.findById(shopId)).thenReturn(Optional.of(mockShop));
+
+        //when
+        // 메서드 실행
+        shopService.addBookmark(shopId, customerId);
+
+        // 메서드가 실행 될 때, 객체 캡쳐
+        verify(shopBookmarkRepository).save(bookmarkCaptor.capture());
+
+        // 캡쳐된 객체 값 추출
+        ShopBookmark capturedBookmark = bookmarkCaptor.getValue();
+
+        //then
+        Assertions.assertNotNull(capturedBookmark);
+        Assertions.assertEquals(mockCustomer, capturedBookmark.getUser());
+        Assertions.assertEquals(mockShop, capturedBookmark.getShop());
+    }
+
+    @Test
+    void addBookmark_시_이미_북마크_되어있다면_CONFLICT_발생한다(){
+        //given
+        when(userRepository.findById(customerId)).thenReturn(Optional.of(mockCustomer));
+        when(shopRepository.findById(shopId)).thenReturn(Optional.of(mockShop));
+
+        when(shopBookmarkRepository.findByShopIdAndUserId(shopId, customerId))
+                .thenReturn(Optional.of(new ShopBookmark()));
+
+        //when
+        ResponseStatusException e = assertThrows(
+                ResponseStatusException.class,
+                () -> shopService.addBookmark(shopId, customerId));
+
+        //then
+        assertEquals("409 CONFLICT \"이미 해당 가게를 즐겨찾기 중입니다.\"", e.getMessage());
+    }
+
+    // deleteBookmark 테스트 (하드 딜리트)
+    @Test
+    void deleteBookmark_성공_시_delete메서드가_성공적으로_호출된다(){
+        //given
+        when(userRepository.findById(customerId)).thenReturn(Optional.of(mockCustomer));
+        when(shopRepository.findById(shopId)).thenReturn(Optional.of(mockShop));
+
+        ShopBookmark mockBookmark = new ShopBookmark();
+        when(shopBookmarkRepository.findByShopIdAndUserId(shopId, customerId))
+                .thenReturn(Optional.of(mockBookmark));
+
+        //when
+        shopService.deleteBookmark(shopId, customerId);
+
+        //then
+        verify(shopBookmarkRepository).delete(mockBookmark);
+    }
 
 
 }
