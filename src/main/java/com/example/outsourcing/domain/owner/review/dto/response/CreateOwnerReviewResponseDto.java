@@ -1,6 +1,7 @@
 package com.example.outsourcing.domain.owner.review.dto.response;
 
 import com.example.outsourcing.domain.owner.review.entity.OwnerReview;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ public class CreateOwnerReviewResponseDto {
 
     private final String content;
     private final String userRole;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd'T'hh-mm-ss")
     private final LocalDateTime createdAt;
 
     public static CreateOwnerReviewResponseDto of(OwnerReview ownerReview) {
