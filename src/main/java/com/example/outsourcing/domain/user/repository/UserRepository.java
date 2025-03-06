@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static com.example.outsourcing.common.exception.ErrorCode.USER_NOT_FOUND;
@@ -28,11 +27,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    Optional<User> findUserByEmail(String email);
-
-    default void deleteUserById(Long userId){
-        User user = findUserByIdOrElseThrow(userId);
-        user.setDeletedAt();
-        save(user);
-    }
+    Optional<User> findUserByEmailAndDeletedAtIsNull(String email);
 }

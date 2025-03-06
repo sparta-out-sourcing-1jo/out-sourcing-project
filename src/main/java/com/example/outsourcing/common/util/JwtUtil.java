@@ -24,6 +24,7 @@ public class JwtUtil {
 
     private static final String BEARER_PREFIX = "Bearer ";
     private static final long TOKEN_TIME = 60 * 60 * 1000L; // 1시간
+    private static final long REFRESH_TOKEN_TIME = 14 * 24 * 60 * 60 * 1000L; // 14일
 
     @Value("${jwt.secret.key}")
     private String secretKey;
@@ -50,6 +51,16 @@ public class JwtUtil {
                         .compact();
     }
 
+    public String createRefreshToken(){
+        Date now = new Date();
+
+        return Jwts.builder()
+                .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_TIME))
+                .setIssuedAt(now)
+                .signWith(key, signatureAlgorithm)
+                .compact();
+    }
+
     public String substringToken(String tokenValue){
         if(StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)){
             return tokenValue.substring(7);
@@ -63,5 +74,19 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    //Refresh Token 검증
+    public boolean validateRefreshToken(String refreshToken){
+        try{
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(refreshToken);
+            return true;
+        }catch(Exception e){
+            log.error("Invalid refresh token", e);
+            return false;
+        }
     }
 }

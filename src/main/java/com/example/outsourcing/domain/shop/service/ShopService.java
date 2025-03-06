@@ -1,7 +1,7 @@
 package com.example.outsourcing.domain.shop.service;
 
+import com.example.outsourcing.common.enums.ShopState;
 import com.example.outsourcing.common.enums.ShopCategory;
-import com.example.outsourcing.domain.menu.entity.Menu;
 import com.example.outsourcing.domain.menu.repository.MenuRepository;
 import com.example.outsourcing.domain.review.repository.ReviewRepository;
 import com.example.outsourcing.domain.shop.dto.request.ShopRequestDto;
@@ -11,6 +11,8 @@ import com.example.outsourcing.domain.shop.dto.response.ShopMenuResponseDto;
 import com.example.outsourcing.domain.shop.dto.response.ShopResponseDto;
 import com.example.outsourcing.domain.shop.dto.response.StateShopResponseDto;
 import com.example.outsourcing.domain.shop.entity.Shop;
+import com.example.outsourcing.domain.shop.entity.ShopBookmark;
+import com.example.outsourcing.domain.shop.repository.ShopBookmarkRepository;
 import com.example.outsourcing.domain.shop.repository.ShopRepository;
 import com.example.outsourcing.domain.user.entity.User;
 import com.example.outsourcing.domain.user.repository.UserRepository;
@@ -19,13 +21,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.repository.query.Param;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.example.outsourcing.common.enums.UserRole.OWNER;
 import static com.example.outsourcing.common.exception.ErrorCode.*;
@@ -38,6 +41,7 @@ public class ShopService {
     private final UserRepository userRepository;
     private final MenuRepository menuRepository;
     private final ReviewRepository reviewRepository;
+    private final ShopBookmarkRepository shopBookmarkRepository;
 
     // 가게 생성
     @Transactional
@@ -89,7 +93,7 @@ public class ShopService {
                 .name(shop.getName())
                 .intro(shop.getIntro())
                 .address(shop.getAddress())
-                .category(String.valueOf(shop.getCategory())) // 이넘 값을 그대로 내보낼 수 없으니 String.valueOf 를 이용하여 이넘값의 이름을 문자열로 반환해서 추출
+                .category(shop.getCategory())
                 .openAt(shop.getOpenAt())
                 .closeAt(shop.getCloseAt())
                 .averageRating(getAverageRating(shop.getId()))
@@ -138,18 +142,17 @@ public class ShopService {
     // 가게 다건 조회 (비로그인)
     @Transactional(readOnly = true)
     public Page<PageShopResponseDto> getShops(ShopCategory category, String name, int page, int size) {
+
+        // 페이지 값
         Pageable pageable = PageRequest.of(page, size);
 
         // 동적 쿼리 적용
-        Specification<Shop> specification = Specification.where(ShopSpecification.shopDeletedAtIsNull())
-                .and(ShopSpecification.shopCategoryEqual(category.toString()))
+        Specification<Shop> specification = Specification
+                .where(ShopSpecification.shopDeletedAtIsNull())
+                .and(ShopSpecification.shopCategoryEqual(category))
                 .and(ShopSpecification.shopNameLike(name));
 
         Page<Shop> shops = shopRepository.findAll(specification, pageable);
-
-        if (shops == null) {
-            return Page.empty(pageable);
-        }
 
         return shops.map(PageShopResponseDto::new);
     }
@@ -166,19 +169,15 @@ public class ShopService {
         String userAddress = user.getAddress();
 
         // 추출된 주소 중 앞의 2글자만 추출
-        String Address2Chars = userAddress.substring(0, 2);
+        String AddressChars = userAddress.substring(0, 2);
 
         // 동적 쿼리 적용
         Specification<Shop> specification = Specification.where(ShopSpecification.shopDeletedAtIsNull())
-                .and(ShopSpecification.shopCategoryEqual(category.toString()))
+                .and(ShopSpecification.shopCategoryEqual(category))
                 .and(ShopSpecification.shopNameLike(name))
-                .and(ShopSpecification.shopAddressLike(Address2Chars));
+                .and(ShopSpecification.shopAddressLike(AddressChars));
 
         Page<Shop> shops = shopRepository.findAll(specification, pageable);
-
-        if (shops == null) {
-            return Page.empty(pageable);
-        }
 
         return shops.map(PageShopResponseDto::new);
     }
@@ -279,4 +278,86 @@ public class ShopService {
                         )
                 );
     }
+
+
+    // 스케줄링 메서드
+    // 크론 안쓰고 이렇게도 가능: (fixedRate = 1000 * 60 * 1): 1분마다 실행 (밀리초 * 초 * 분)
+    // 크론 표현식: 초 분 시 일 월 요일 => 0 * * * * *: 매요일 매월 매일 매시 매분 0초마다 반복
+    @Scheduled(cron = "0 * * * * *")
+    public void scheduledShopState() {
+        List<Shop> shops = shopRepository.findAll();
+        LocalTime nowTime = LocalTime.now().truncatedTo(ChronoUnit.MINUTES); // 초 무시하고 분 단위로 기록
+
+        // 설정 시간과 현재 시간이 정확히 일치하는 순간에 작동
+        for (Shop shop : shops) {
+            if (nowTime.equals(shop.getOpenAt()) && shop.getState() != ShopState.OPEN) {
+                shop.updateState(ShopState.OPEN);
+            }
+            if (nowTime.equals(shop.getCloseAt()) && shop.getState() != ShopState.CLOSE) {
+                shop.updateState(ShopState.CLOSE);
+            }
+        }
+    }
+
+    // 가게 즐겨찾기
+    @Transactional
+    public void addBookmark(Long shopId, Long userId) {
+        // 유저 검증
+        User user = findUser(userId);
+
+        // 가게 검증
+        Shop shop = findShop(shopId);
+
+        // 즐겨찾기 중복 검증
+        if (shopBookmarkRepository.findByShopIdAndUserId(shopId, userId).isPresent()) {
+            throw new ResponseStatusException(
+                    ALREADY_EXIST_BOOKMARK.getStatus(),
+                    ALREADY_EXIST_BOOKMARK.getMessage()
+            );
+        }
+
+        // 엔티티 생성
+        ShopBookmark shopBookmark = ShopBookmark.builder()
+                .user(user)
+                .shop(shop)
+                .build();
+
+        shopBookmarkRepository.save(shopBookmark);
+    }
+
+    // 즐겨찾기 삭제 (하드 딜리트)
+    @Transactional
+    public void deleteBookmark(Long shopId, Long userId) {
+
+        // 유저 검증
+        User user = findUser(userId);
+
+        // 가게 검증
+        Shop shop = findShop(shopId);
+
+        // 즐겨찾기 중복 검증
+        ShopBookmark bookmark = shopBookmarkRepository.findByShopIdAndUserId(shopId, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                                NOT_EXIST_BOOKMARK.getStatus(),
+                                NOT_EXIST_BOOKMARK.getMessage()
+                        )
+                );
+
+        shopBookmarkRepository.delete(bookmark);
+
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PageShopResponseDto> getShopBookmarks(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 유저 검증
+        User user = findUser(userId);
+
+        // 특정 유저의 북마크 페이징 조회
+        Page<ShopBookmark> bookmarks = shopBookmarkRepository.findByUserId(user.getId(), pageable);
+
+        return bookmarks.map(bookmark -> new PageShopResponseDto(bookmark.getShop()));
+    }
+
 }
