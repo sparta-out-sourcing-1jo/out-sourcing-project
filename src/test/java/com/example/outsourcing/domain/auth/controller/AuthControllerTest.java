@@ -71,7 +71,7 @@ class AuthControllerTest {
     void login_Success() throws Exception {
         //given
         LoginRequest loginRequest = new LoginRequest("test@example.com", "Testpassword123!");
-        LoginResponse loginResponse = new LoginResponse("jwt-token");
+        LoginResponse loginResponse = new LoginResponse("jwt-token", "refreshToken");
 
         given(authService.login(any(LoginRequest.class))).willReturn(loginResponse);
 
@@ -80,7 +80,8 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.bearerToken").value("jwt-token"));
+                .andExpect(jsonPath("$.bearerToken").value("jwt-token"))
+                .andExpect(jsonPath("$.refreshToken").value("refreshToken"));
 
         verify(authService, times(1)).login(any(LoginRequest.class));
     }
