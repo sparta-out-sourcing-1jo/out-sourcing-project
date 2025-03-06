@@ -28,6 +28,7 @@ public enum ErrorCode {
     INVALID_TOKEN("유효하지 않은 토큰입니다.", UNAUTHORIZED),
     // 메뉴 관련 예외 코드
     MENU_NOT_FOUND("해당 메뉴를 찾을 수 없습니다.", NOT_FOUND),
+    MENU_NOT_IN_SHOP("해당 메뉴는 해당 가게에서 속하지 않습니다.", BAD_REQUEST),
 
     // 가게 관련 예외 코드
     SHOP_NOT_FOUND("해당 가게를 찾을 수 없습니다", NOT_FOUND),
@@ -42,6 +43,7 @@ public enum ErrorCode {
     ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다.", NOT_FOUND),
     
     // 리뷰 관련 예외 코드
+    FILE_UPLOAD_FAILED("이미지 파일 업로드에 실패했습니다.", PRECONDITION_FAILED),
     REVIEW_NOT_FOUND("해당 리뷰를 찾을 수 없습니다", NOT_FOUND),
     REVIEW_ALREADY_EXIST("해당 주문에 대한 리뷰가 이미 존재합니다", BAD_REQUEST);
     

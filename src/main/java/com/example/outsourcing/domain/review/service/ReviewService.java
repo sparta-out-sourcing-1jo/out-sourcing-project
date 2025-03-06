@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.data.domain.Pageable;
@@ -34,13 +35,16 @@ public class ReviewService {
     private final OrderRepository orderRepository;
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
+    private final S3Uploader s3Uploader;
 
     // 리뷰 생성 서비스 로직
     @Transactional
     public CreateReviewResponseDto createReview(
             CreateReviewRequestDto dto,
+            MultipartFile file,
             Long orderId
     ) {
+        // 리뷰 어뷰징 방지 (1주문 당 1리뷰)
         if(reviewRepository.findByOrderId(orderId).isPresent()) {
             throw new ResponseStatusException(
                     REVIEW_ALREADY_EXIST.getStatus(),
@@ -57,17 +61,21 @@ public class ReviewService {
             );
         }
 
-        User findUser = getUser(findOrder.getUser().getId());
-        Shop findShop = getShop(findOrder.getShop().getId());
+        String imageUrl = null;
+        if(file != null && !file.isEmpty()) {
+            imageUrl = s3Uploader.uploadFile(file);
+        }
 
         Review savedReview = Review.builder()
                 .content(dto.getContent())
                 .rating(dto.getRating())
-                .user(findUser)
-                .shop(findShop)
+                .imageUrl(imageUrl)
+                .user(findOrder.getOrderMenus().getUser())
+                .shop(findOrder.getOrderMenus().getShop())
                 .order(findOrder)
                 .build();
 
+        reviewRepository.save(savedReview);
         return CreateReviewResponseDto.of(savedReview);
     }
 
@@ -75,30 +83,34 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public PageResponseDto<GetReviewResponseDto> findReviews(Long shopId, Pageable pageable) {
         Shop findShop = getShop(shopId);
-        Page<Review> reviews = reviewRepository.findAllReviewsByShop(findShop, pageable);
+        Page<Review> reviews = reviewRepository.findAllReviewsByShopId(findShop.getId(), pageable);
         return new PageResponseDto<>(reviews.map(GetReviewResponseDto::of));
     }
 
     // 리뷰 단건 수정 서비스 로직
     @Transactional
-    public GetReviewResponseDto updateReview(
+    public UpdateReviewResponseDto updateReview(
             UpdateReviewRequestDto dto,
+            MultipartFile file,
             Long reviewId,
             Long userId
     ) {
-        User findUser = getUser(userId);
+        checkUserPermission(reviewId, userId);
         Review findReview = getReview(reviewId);
-        checkUserPermission(findReview.getId(), findUser.getId());
 
-        findReview.reviewUpdate(dto.getContent(), dto.getRating());
+        String imageUrl = findReview.getImageUrl();
+        if(file != null && !file.isEmpty()) {
+            imageUrl = s3Uploader.uploadFile(file);
+        }
+
+        findReview.reviewUpdate(dto.getContent(), dto.getRating(), imageUrl);
         return UpdateReviewResponseDto.of(findReview);
     }
     
     // 리뷰 단건 삭제 서비스 로직
     @Transactional
     public void deleteReview(Long reviewId, Long userId) {
-        User findUser = getUser(userId);
-        checkUserPermission(reviewId, findUser.getId());
+        checkUserPermission(reviewId, userId);
 
         getReview(reviewId).setDeletedAt();
     }
@@ -149,7 +161,7 @@ public class ReviewService {
     
     // 해당 유저가 해당 리뷰를 작성한 유저인지 확인하는 메서드
     protected void checkUserPermission(Long reviewId, Long userId) {
-        if(ObjectUtils.nullSafeEquals(userId, getReview(reviewId).getUser().getId())) {
+        if(!ObjectUtils.nullSafeEquals(userId, getReview(reviewId).getUser().getId())) {
             throw new ResponseStatusException(
                     USER_ACCESS_DENIED.getStatus(),
                     USER_ACCESS_DENIED.getMessage()

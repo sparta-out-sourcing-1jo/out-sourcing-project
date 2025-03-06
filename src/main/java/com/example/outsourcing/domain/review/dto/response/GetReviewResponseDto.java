@@ -1,6 +1,8 @@
 package com.example.outsourcing.domain.review.dto.response;
 
 import com.example.outsourcing.domain.review.entity.Review;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,15 @@ public class GetReviewResponseDto {
 
     private final String content;
     private final Integer rating;
+    private final String userRole;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final String imageUrl;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd'T'hh-mm-ss")
     private final LocalDateTime createdAt;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd'T'hh-mm-ss")
     private final LocalDateTime updatedAt;
 
     public static GetReviewResponseDto of(Review review) {
@@ -29,6 +39,8 @@ public class GetReviewResponseDto {
                 review.getOrder().getId(),
                 review.getContent(),
                 review.getRating(),
+                review.getUser().getRole().name(),
+                review.getImageUrl(),
                 review.getCreatedAt(),
                 review.getUpdatedAt()
         );
