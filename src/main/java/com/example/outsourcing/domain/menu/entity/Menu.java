@@ -40,4 +40,8 @@ public class Menu extends BaseTimeEntity {
     public void setDeletedAt() {
         super.setDeletedAt();;
     }
+
+    public void increaseOrderCount(Integer quantity) {
+        this.orderCount += quantity;
+    }
 }
