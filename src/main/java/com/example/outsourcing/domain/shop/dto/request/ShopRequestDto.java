@@ -31,5 +31,5 @@ public class ShopRequestDto {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime closeAt;
 
-    private Double minPrice;
+    private Integer minPrice;
 }
