@@ -4,7 +4,9 @@ import com.example.outsourcing.common.entity.BaseTimeEntity;
 import com.example.outsourcing.common.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 @Getter
 @Entity
 @Table(name = "users")
@@ -29,5 +31,19 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    public User(String email, String password, String username, String address, UserRole role) {
+        this.email = email;
+        this.password = password;
+        this.username = username;
+        this.address = address;
+        this.role = role;
+    }
 
+    public void changePassword(String password){
+        this.password = password;
+    }
+
+    public void changeUserRole(UserRole role){
+        this.role = role;
+    }
 }
